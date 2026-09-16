@@ -56,7 +56,7 @@
             pointer-events: none;
         }
 
-        /* Off-screen YouTube Audio Container */
+        /* Off-screen YouTube Audio Container Fallback */
         #yt-player-container {
             position: absolute;
             width: 200px; height: 200px;
@@ -648,7 +648,7 @@
     <span>Drop Here to Remove</span>
 </div>
 
-<!-- Off-screen YouTube Player Container -->
+<!-- Off-screen YouTube Player Container Fallback -->
 <div id="yt-player-container">
     <div id="yt-hidden-player"></div>
 </div>
@@ -708,19 +708,31 @@
                         <textarea id="goty-blurb-input" class="goty-textarea" placeholder="Write why this is your personal Game of the Year..."></textarea>
                         <div id="goty-blurb-display" class="goty-blurb-display"></div>
                         
-                        <!-- YOUTUBE THEME SETTINGS ACCORDION -->
+                        <!-- YOUTUBE THEME SETTINGS ACCORDION & VISIBLE DEBUG PLAYER -->
                         <details class="theme-accordion">
                             <summary>🎵 Theme Song Settings (<span id="theme-status-text">None</span>)</summary>
                             <div class="theme-controls">
                                 <div class="theme-controls-row">
                                     <input type="text" id="goty-youtube-input" placeholder="Paste YouTube link for main theme..." />
                                     <button onclick="setGOTYYoutubeLink()">Set Link</button>
-                                    <button id="preview-theme-btn" onclick="previewGOTYTheme()" style="background-color:#03dac6; color:#000;">▶️ Preview</button>
                                 </div>
                                 <div class="theme-controls-row">
                                     <button class="search-web-btn" onclick="openYoutubeThemeSearch()" style="flex:1;">🔍 Search Theme on YouTube</button>
                                     <button onclick="removeGOTYTheme()" style="background-color:#cf6679; color:white;">Remove Song</button>
                                 </div>
+
+                                <!-- SUBMITTER DEBUG VIDEO & AUDIO CONTROLS -->
+                                <div id="yt-visible-player-wrapper" style="margin-top: 15px; display: none; text-align: center;">
+                                    <div id="yt-player-slot" style="width: 100%; max-width: 360px; height: 200px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 1px solid var(--accent);"></div>
+                                    <div class="theme-controls-row" style="justify-content: center; margin-top: 10px; gap: 10px;">
+                                        <button onclick="playGOTYThemeDebug()" style="background:#03dac6; color:#000; padding:8px 16px; font-weight:bold;">▶️ Play Audio</button>
+                                        <button onclick="pauseGOTYThemeDebug()" style="background:#ffb74d; color:#000; padding:8px 16px; font-weight:bold;">⏸️ Pause Audio</button>
+                                    </div>
+                                    <div id="yt-debug-log" style="font-family: monospace; font-size: 11px; color: #03dac6; background: rgba(0,0,0,0.6); padding: 10px; border-radius: 8px; margin-top: 10px; text-align: left; max-height: 120px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1);">
+                                        <div>[YT Debug Log Ready]</div>
+                                    </div>
+                                </div>
+
                             </div>
                         </details>
                     </div>
@@ -767,6 +779,13 @@
 <script>
     function logDebug(msg) {
         console.log("[GOTY Debug]", msg);
+        const logBox = document.getElementById("yt-debug-log");
+        if (logBox) {
+            const entry = document.createElement("div");
+            entry.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+            logBox.appendChild(entry);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
     }
 
     // Tap-to-Place Selection State for Mobile Compatibility
@@ -932,7 +951,7 @@
     } else { document.body.style.background = "linear-gradient(135deg, #2a0845, #6441A5)"; }
 
     // ==========================================
-    // YOUTUBE THEME PLAYER LOGIC
+    // YOUTUBE THEME PLAYER LOGIC WITH SUBMITTER DEBUG
     // ==========================================
     let ytPlayer = null;
     let gotyVideoId = null;
@@ -947,7 +966,7 @@
 
     function onYouTubeIframeAPIReady() {
         isYtReady = true;
-        logDebug("YouTube IFrame API Ready");
+        logDebug("YouTube IFrame API Ready.");
         if (gotyVideoId) {
             initYoutubePlayer();
         }
@@ -960,32 +979,49 @@
             return;
         }
 
-        const container = document.getElementById("yt-player-container");
+        const debugWrapper = document.getElementById("yt-visible-player-wrapper");
+        if (debugWrapper && !isSharedView) {
+            debugWrapper.style.display = "block";
+        }
+
+        let targetSlotId = 'yt-hidden-player';
+        const slotInAccordion = document.getElementById("yt-player-slot");
+        
+        if (slotInAccordion && !isSharedView) {
+            slotInAccordion.innerHTML = '<iframe id="yt-active-iframe" type="text/html" width="100%" height="100%" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media"></iframe>';
+            targetSlotId = 'yt-active-iframe';
+        } else {
+            const container = document.getElementById("yt-player-container");
+            if (container) {
+                container.innerHTML = '<iframe id="yt-hidden-player" type="text/html" width="100%" height="100%" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media"></iframe>';
+            }
+        }
 
         if (window.location.protocol === 'file:') {
-            logDebug("Local file:// protocol detected. Injecting static fallback iframe.");
-            if (container) {
-                container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${gotyVideoId}?autoplay=1&loop=1&playlist=${gotyVideoId}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+            logDebug("Local file:// protocol detected. Using direct iframe embed.");
+            const targetEl = document.getElementById(targetSlotId) || document.getElementById("yt-player-container");
+            if (targetEl) {
+                targetEl.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${gotyVideoId}?autoplay=0&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
             }
             return;
         }
 
         if (!isYtReady) {
-            logDebug("YT API not ready yet, queueing initialization...");
+            logDebug("YT API not ready yet, queuing initialization...");
             return;
         }
 
         if (ytPlayer && typeof ytPlayer.destroy === 'function') {
-            try { ytPlayer.destroy(); } catch(e){}
+            try { 
+                logDebug("Destroying old YT player instance...");
+                ytPlayer.destroy(); 
+            } catch(e){}
             ytPlayer = null;
         }
 
-        if (container) {
-            container.innerHTML = '<iframe id="yt-hidden-player" type="text/html" width="100%" height="100%" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media"></iframe>';
-        }
-
         try {
-            ytPlayer = new YT.Player('yt-hidden-player', {
+            logDebug(`Constructing YT.Player on #${targetSlotId}...`);
+            ytPlayer = new YT.Player(targetSlotId, {
                 host: 'https://www.youtube-nocookie.com',
                 videoId: gotyVideoId,
                 playerVars: {
@@ -994,7 +1030,8 @@
                     'loop': 1,
                     'playlist': gotyVideoId,
                     'enablejsapi': 1,
-                    'playsinline': 1
+                    'playsinline': 1,
+                    'origin': window.location.origin
                 },
                 events: {
                     'onReady': onPlayerReady,
@@ -1008,27 +1045,73 @@
     }
 
     function onPlayerReady(event) {
-        logDebug("YT Player Ready.");
-        event.target.setVolume(70);
+        logDebug("YT Event: onPlayerReady triggered.");
+        try {
+            event.target.setVolume(80);
+            logDebug("Volume set to 80%. Ready for audio test.");
+        } catch(e) {
+            logDebug("Error setting volume in onReady: " + e.message);
+        }
     }
 
     function onPlayerStateChange(event) {
         const muteBtn = document.getElementById("goty-mute-btn");
-        const states = { '-1': 'Unstarted', '0': 'Ended', '1': 'Playing', '2': 'Paused', '3': 'Buffering', '5': 'Cued' };
-        logDebug("Player State: " + (states[event.data] || event.data));
+        const states = { '-1': 'Unstarted', '0': 'Ended', '1': 'Playing 🎵', '2': 'Paused ⏸️', '3': 'Buffering ⏳', '5': 'Cued' };
+        const stateName = states[event.data] || `Unknown Code (${event.data})`;
+        logDebug(`YT Event: onStateChange -> ${stateName}`);
 
         if (event.data === YT.PlayerState.PLAYING) {
-            muteBtn.style.display = "inline-block";
-        }
-        if (event.data === YT.PlayerState.ENDED) {
-            if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
-                ytPlayer.playVideo();
-            }
+            if (muteBtn) muteBtn.style.display = "inline-block";
         }
     }
 
     function onPlayerError(event) {
-        logDebug("YT Player Error code: " + event.data);
+        const errorCodes = {
+            2: "Invalid parameter value",
+            5: "HTML5 player error",
+            100: "Video not found or removed",
+            101: "Owner does not allow embedded playback",
+            150: "Owner does not allow embedded playback"
+        };
+        const msg = errorCodes[event.data] || "Unknown error";
+        logDebug(`YT Event: onError (${event.data}) -> ${msg}`);
+    }
+
+    function playGOTYThemeDebug() {
+        logDebug("Manual Play button clicked.");
+        if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+            try {
+                ytPlayer.unMute();
+                ytPlayer.setVolume(80);
+                ytPlayer.playVideo();
+                logDebug("ytPlayer.playVideo() called.");
+            } catch(e) {
+                logDebug("Error calling playVideo(): " + e.message);
+            }
+        } else {
+            logDebug("ytPlayer not initialized yet. Re-initializing...");
+            initYoutubePlayer();
+            setTimeout(() => {
+                if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                    ytPlayer.unMute();
+                    ytPlayer.playVideo();
+                }
+            }, 800);
+        }
+    }
+
+    function pauseGOTYThemeDebug() {
+        logDebug("Manual Pause button clicked.");
+        if (ytPlayer && typeof ytPlayer.pauseVideo === 'function') {
+            try {
+                ytPlayer.pauseVideo();
+                logDebug("ytPlayer.pauseVideo() called.");
+            } catch(e) {
+                logDebug("Error calling pauseVideo(): " + e.message);
+            }
+        } else {
+            logDebug("ytPlayer not initialized.");
+        }
     }
 
     function toggleGOTYAudio() {
@@ -1058,49 +1141,6 @@
         }
     }
 
-    function previewGOTYTheme() {
-        const urlInput = document.getElementById("goty-youtube-input");
-        const linkVal = urlInput.value.trim();
-        
-        if (linkVal) {
-            const videoId = extractYoutubeId(linkVal);
-            if (videoId) {
-                gotyVideoId = videoId;
-                document.getElementById("theme-status-text").innerText = "Link Active";
-                initYoutubePlayer();
-                saveAppState();
-                setTimeout(() => {
-                    if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
-                        ytPlayer.unMute();
-                        ytPlayer.setVolume(70);
-                        ytPlayer.playVideo();
-                        showToast("🎵 Playing theme preview!");
-                    }
-                }, 600);
-                return;
-            }
-        }
-
-        if (gotyVideoId) {
-            if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
-                ytPlayer.unMute();
-                ytPlayer.setVolume(70);
-                ytPlayer.playVideo();
-                showToast("🎵 Playing theme preview!");
-            } else {
-                initYoutubePlayer();
-                setTimeout(() => {
-                    if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
-                        ytPlayer.unMute();
-                        ytPlayer.playVideo();
-                    }
-                }, 600);
-            }
-        } else {
-            alert("Please paste a valid YouTube link first!");
-        }
-    }
-
     function removeGOTYTheme(silent = false) {
         gotyVideoId = null;
         if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
@@ -1109,6 +1149,8 @@
         document.getElementById("goty-youtube-input").value = "";
         document.getElementById("theme-status-text").innerText = "None";
         document.getElementById("goty-mute-btn").style.display = "none";
+        const debugWrapper = document.getElementById("yt-visible-player-wrapper");
+        if (debugWrapper) debugWrapper.style.display = "none";
         logDebug("Theme song removed.");
         if(!silent) showToast("Theme song removed");
         saveAppState();
@@ -1131,9 +1173,9 @@
         if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
             try {
                 ytPlayer.unMute();
-                ytPlayer.setVolume(70);
+                ytPlayer.setVolume(80);
                 ytPlayer.playVideo();
-                logDebug("ytPlayer.playVideo() executed");
+                logDebug("ytPlayer.playVideo() executed on reveal.");
             } catch(e) {
                 logDebug("Error starting audio on reveal: " + e.message);
             }
@@ -1283,7 +1325,6 @@
 
         if (data.categories && data.categories.length > 0) { 
             data.categories.forEach(c => {
-                // In shared preview mode, skip rendering empty categories
                 if (isSharedView && (!c.gameIds || c.gameIds.length === 0)) return;
                 createCategorySlot(c.title, c.gameIds, c.description || "");
             }); 
