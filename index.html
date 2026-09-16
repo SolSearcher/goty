@@ -56,15 +56,6 @@
             pointer-events: none;
         }
 
-        /* Off-screen YouTube Audio Container Fallback */
-        #yt-player-container {
-            position: absolute;
-            width: 200px; height: 200px;
-            left: -9999px;
-            opacity: 0.01;
-            pointer-events: none;
-        }
-
         /* --- DRAG TO RIGHT TRASH ZONE --- */
         #right-trash-zone {
             position: fixed;
@@ -723,7 +714,7 @@
 
                                 <!-- SUBMITTER DEBUG VIDEO & AUDIO CONTROLS -->
                                 <div id="yt-visible-player-wrapper" style="margin-top: 15px; display: none; text-align: center;">
-                                    <div id="yt-player-slot" style="width: 100%; max-width: 360px; height: 200px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 1px solid var(--accent);"></div>
+                                    <div id="yt-player-slot" style="width: 100%; max-width: 360px; height: 200px; margin: 0 auto; border-radius: 12px; overflow: hidden; border: 1px solid var(--accent); background: #000;"></div>
                                     <div class="theme-controls-row" style="justify-content: center; margin-top: 10px; gap: 10px;">
                                         <button onclick="playGOTYThemeDebug()" style="background:#03dac6; color:#000; padding:8px 16px; font-weight:bold;">▶️ Play Audio</button>
                                         <button onclick="pauseGOTYThemeDebug()" style="background:#ffb74d; color:#000; padding:8px 16px; font-weight:bold;">⏸️ Pause Audio</button>
@@ -948,7 +939,7 @@
         const timeLocation = gl.getUniformLocation(shaderProgram, "u_time"), resLocation = gl.getUniformLocation(shaderProgram, "u_resolution");
         function render(time) { gl.uniform1f(timeLocation, time * 0.001); gl.uniform2f(resLocation, canvas.width, canvas.height); gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); requestAnimationFrame(render); }
         requestAnimationFrame(render);
-    } else { document.body.style.background = "linear-gradient(135deg, #2a0845, #6441A5)"; }
+    } else { document.style.background = "linear-gradient(135deg, #2a0845, #6441A5)"; }
 
     // ==========================================
     // YOUTUBE THEME PLAYER LOGIC WITH SUBMITTER DEBUG
@@ -957,20 +948,22 @@
     let gotyVideoId = null;
     let isYtReady = false;
 
-    function extractYoutubeId(url) {
-        if (!url) return null;
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-        const match = url.match(regExp);
-        return (match && match[2].length === 11) ? match[2] : null;
+    function checkYtReady() {
+        if (window.YT && window.YT.Player) {
+            isYtReady = true;
+            return true;
+        }
+        return false;
     }
 
     function onYouTubeIframeAPIReady() {
         isYtReady = true;
-        logDebug("YouTube IFrame API Ready.");
+        logDebug("YouTube IFrame API Ready Callback Fired.");
         if (gotyVideoId) {
             initYoutubePlayer();
         }
     }
+    window.onYouTubeIframeAPIReady = onYouTubeIframeAPIReady;
 
     function initYoutubePlayer() {
         logDebug(`Initializing YT Player for Video ID: ${gotyVideoId}`);
@@ -982,6 +975,12 @@
         const debugWrapper = document.getElementById("yt-visible-player-wrapper");
         if (debugWrapper && !isSharedView) {
             debugWrapper.style.display = "block";
+        }
+
+        if (!isYtReady && !checkYtReady()) {
+            logDebug("YT API not ready yet, retrying in 500ms...");
+            setTimeout(initYoutubePlayer, 500);
+            return;
         }
 
         let targetSlotId = 'yt-hidden-player';
@@ -1006,11 +1005,6 @@
             return;
         }
 
-        if (!isYtReady) {
-            logDebug("YT API not ready yet, queuing initialization...");
-            return;
-        }
-
         if (ytPlayer && typeof ytPlayer.destroy === 'function') {
             try { 
                 logDebug("Destroying old YT player instance...");
@@ -1031,7 +1025,7 @@
                     'playlist': gotyVideoId,
                     'enablejsapi': 1,
                     'playsinline': 1,
-                    'origin': window.location.origin
+                    'origin': window.location.origin || '*'
                 },
                 events: {
                     'onReady': onPlayerReady,
