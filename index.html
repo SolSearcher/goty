@@ -59,9 +59,9 @@
         /* Off-screen YouTube Audio Container */
         #yt-player-container {
             position: absolute;
-            width: 1px; height: 1px;
+            width: 200px; height: 200px;
             left: -9999px;
-            opacity: 0;
+            opacity: 0.01;
             pointer-events: none;
         }
 
@@ -470,6 +470,15 @@
 
         .goty-placeholder-text { color: rgba(255,255,255,0.4); font-weight: 700; font-size: 16px; padding: 10px; pointer-events: none; }
 
+        .goty-image-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 320px;
+        }
+
         .goty-icon-display {
             width: 100%; height: auto; max-width: 320px; max-height: 350px; object-fit: contain; border-radius: 16px;
             box-shadow: 0 12px 30px rgba(0,0,0,0.8); cursor: pointer; transition: transform 0.3s ease; display: block;
@@ -563,7 +572,7 @@
             .export-btn { width: 100%; text-align: center; padding: 12px 20px; }
         }
 
-        /* --- VIEW-ONLY (SHARED) STATE CSS --- */
+        /* --- VIEW-ONLY (SHARED PREVIEW) STATE CSS --- */
         body.shared-view .input-section,
         body.shared-view .category-adder,
         body.shared-view .sidebar,
@@ -586,9 +595,22 @@
         body.shared-view .goty-blurb-display { display: block; }
 
         body.shared-view .goty-drop-slot { border: none !important; background: transparent !important; padding: 0 !important; }
-        body.shared-view .goty-container { display: none; } 
+        body.shared-view .goty-container {
+            visibility: hidden;
+            height: 0;
+            overflow: hidden;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
         body.shared-view .goty-reveal-card { display: block; }
-        body.shared-view.goty-revealed .goty-container { display: flex; animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        
+        body.shared-view.goty-revealed .goty-container {
+            visibility: visible;
+            height: auto;
+            opacity: 1;
+            display: flex;
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
         body.shared-view.goty-revealed .goty-reveal-card { display: none; }
 
         body.shared-view .game-icon-wrapper::after { display: none !important; }
@@ -693,6 +715,7 @@
                                 <div class="theme-controls-row">
                                     <input type="text" id="goty-youtube-input" placeholder="Paste YouTube link for main theme..." />
                                     <button onclick="setGOTYYoutubeLink()">Set Link</button>
+                                    <button id="preview-theme-btn" onclick="previewGOTYTheme()" style="background-color:#03dac6; color:#000;">▶️ Preview</button>
                                 </div>
                                 <div class="theme-controls-row">
                                     <button class="search-web-btn" onclick="openYoutubeThemeSearch()" style="flex:1;">🔍 Search Theme on YouTube</button>
@@ -942,7 +965,7 @@
         if (window.location.protocol === 'file:') {
             logDebug("Local file:// protocol detected. Injecting static fallback iframe.");
             if (container) {
-                container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${gotyVideoId}?autoplay=${isSharedView ? 0 : 1}&loop=1&playlist=${gotyVideoId}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+                container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${gotyVideoId}?autoplay=1&loop=1&playlist=${gotyVideoId}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
             }
             return;
         }
@@ -958,7 +981,7 @@
         }
 
         if (container) {
-            container.innerHTML = '<iframe id="yt-hidden-player" type="text/html" width="100%" height="100%" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay"></iframe>';
+            container.innerHTML = '<iframe id="yt-hidden-player" type="text/html" width="100%" height="100%" frameborder="0" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media"></iframe>';
         }
 
         try {
@@ -966,7 +989,7 @@
                 host: 'https://www.youtube-nocookie.com',
                 videoId: gotyVideoId,
                 playerVars: {
-                    'autoplay': isSharedView ? 0 : 1,
+                    'autoplay': 0,
                     'controls': 1,
                     'loop': 1,
                     'playlist': gotyVideoId,
@@ -986,10 +1009,7 @@
 
     function onPlayerReady(event) {
         logDebug("YT Player Ready.");
-        event.target.setVolume(50);
-        if (!isSharedView) {
-            try { event.target.playVideo(); } catch(e) { logDebug("Autoplay error: " + e.message); }
-        }
+        event.target.setVolume(70);
     }
 
     function onPlayerStateChange(event) {
@@ -1001,7 +1021,9 @@
             muteBtn.style.display = "inline-block";
         }
         if (event.data === YT.PlayerState.ENDED) {
-            ytPlayer.playVideo();
+            if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                ytPlayer.playVideo();
+            }
         }
     }
 
@@ -1036,6 +1058,49 @@
         }
     }
 
+    function previewGOTYTheme() {
+        const urlInput = document.getElementById("goty-youtube-input");
+        const linkVal = urlInput.value.trim();
+        
+        if (linkVal) {
+            const videoId = extractYoutubeId(linkVal);
+            if (videoId) {
+                gotyVideoId = videoId;
+                document.getElementById("theme-status-text").innerText = "Link Active";
+                initYoutubePlayer();
+                saveAppState();
+                setTimeout(() => {
+                    if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                        ytPlayer.unMute();
+                        ytPlayer.setVolume(70);
+                        ytPlayer.playVideo();
+                        showToast("🎵 Playing theme preview!");
+                    }
+                }, 600);
+                return;
+            }
+        }
+
+        if (gotyVideoId) {
+            if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                ytPlayer.unMute();
+                ytPlayer.setVolume(70);
+                ytPlayer.playVideo();
+                showToast("🎵 Playing theme preview!");
+            } else {
+                initYoutubePlayer();
+                setTimeout(() => {
+                    if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+                        ytPlayer.unMute();
+                        ytPlayer.playVideo();
+                    }
+                }, 600);
+            }
+        } else {
+            alert("Please paste a valid YouTube link first!");
+        }
+    }
+
     function removeGOTYTheme(silent = false) {
         gotyVideoId = null;
         if (ytPlayer && typeof ytPlayer.stopVideo === 'function') {
@@ -1060,18 +1125,22 @@
         playSound('reveal');
         document.body.classList.add('goty-revealed');
         
-        if (window.location.protocol === 'file:' && gotyVideoId) {
-            const container = document.getElementById("yt-player-container");
-            if (container) {
-                container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${gotyVideoId}?autoplay=1&loop=1&playlist=${gotyVideoId}" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-            }
-        } else if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
+        const muteBtn = document.getElementById("goty-mute-btn");
+        muteBtn.style.display = "inline-block";
+
+        if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
             try {
                 ytPlayer.unMute();
                 ytPlayer.setVolume(70);
                 ytPlayer.playVideo();
+                logDebug("ytPlayer.playVideo() executed");
             } catch(e) {
                 logDebug("Error starting audio on reveal: " + e.message);
+            }
+        } else if (gotyVideoId) {
+            const container = document.getElementById("yt-player-container");
+            if (container) {
+                container.innerHTML = `<iframe width="100%" height="100%" src="https://www.youtube.com/embed/${gotyVideoId}?autoplay=1&enablejsapi=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
             }
         }
     }
@@ -1213,7 +1282,11 @@
         if(!isSharedView) renderSidebar();
 
         if (data.categories && data.categories.length > 0) { 
-            data.categories.forEach(c => createCategorySlot(c.title, c.gameIds, c.description || "")); 
+            data.categories.forEach(c => {
+                // In shared preview mode, skip rendering empty categories
+                if (isSharedView && (!c.gameIds || c.gameIds.length === 0)) return;
+                createCategorySlot(c.title, c.gameIds, c.description || "");
+            }); 
         } else { 
             defaultCategories.forEach(cat => createCategorySlot(cat)); 
         }
@@ -1380,10 +1453,7 @@
         if (game) {
             slot.classList.add("has-game");
             const wrapper = document.createElement("div");
-            wrapper.className = "dropped-game-wrapper";
-            wrapper.style.border = "none";
-            wrapper.style.background = "transparent";
-            wrapper.style.padding = "0";
+            wrapper.className = "goty-image-wrapper";
             
             const img = document.createElement("img");
             img.src = game.icon;
