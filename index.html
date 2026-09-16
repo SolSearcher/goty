@@ -11,8 +11,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700;900&family=Righteous&display=swap" rel="stylesheet">
     
-    <!-- Touchscreen Drag & Drop Polyfill -->
-    <script src="https://cdn.jsdelivr.net/npm/drag-drop-touch-polyfill@1.0.0/DragDropTouch.js"></script>
+    <!-- SortableJS for Smooth Mobile Touch Drag & Drop -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 
     <!-- Third-Party Utilities: LZ-String URL Compression & HTML2Canvas PNG Exporter -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
@@ -77,13 +77,11 @@
             color: #cf6679; font-weight: 800; font-size: 13px; text-transform: uppercase;
             letter-spacing: 1px; text-align: center; padding: 15px; box-sizing: border-box;
             transition: right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), background-color 0.2s, border-color 0.2s;
-            pointer-events: none;
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
         }
         #right-trash-zone.active {
             right: 0;
-            pointer-events: all;
         }
         #right-trash-zone.drag-over {
             background: rgba(207, 102, 121, 0.7);
@@ -240,6 +238,7 @@
             padding: 15px 20px; margin-bottom: 5px; font-size: 20px; font-weight: 500;
             transition: 0.2s; border-radius: 12px; gap: 15px; flex-wrap: wrap;
             cursor: grab;
+            touch-action: pan-y;
         }
         .game-item:hover { background: rgba(255,255,255,0.04); }
         .game-item:active { cursor: grabbing; }
@@ -323,9 +322,10 @@
             position: sticky; top: 40px; box-shadow: inset 0 5px 20px rgba(0,0,0,0.5);
             box-sizing: border-box;
             flex-shrink: 0;
+            touch-action: pan-y;
         }
 
-        .sidebar-item { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: grab; width: 100%; transition: transform 0.2s; }
+        .sidebar-item { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: grab; width: 100%; transition: transform 0.2s; touch-action: pan-y; }
         .sidebar-item:active { cursor: grabbing; transform: scale(0.95); }
         
         .sidebar-item.selected .draggable-icon {
@@ -410,6 +410,7 @@
             border-radius: 8px; cursor: grab; transition: transform 0.2s, filter 0.2s;
             box-sizing: border-box;
             user-select: none;
+            touch-action: pan-y;
         }
         .dropped-game-wrapper.pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .dropped-game-wrapper:active { cursor: grabbing; }
@@ -772,31 +773,19 @@
     }
 
     // ==========================================
-    // RIGHT TRASH ZONE DRAG-TO-REMOVE SETUP
+    // SORTABLEJS TRASH ZONE SETUP
     // ==========================================
     function setupTrashZone() {
         const trash = document.getElementById("right-trash-zone");
         if (!trash || isSharedView) return;
 
-        trash.addEventListener("dragover", e => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
-            trash.classList.add("drag-over");
-        });
-
-        trash.addEventListener("dragleave", () => {
-            trash.classList.remove("drag-over");
-        });
-
-        trash.addEventListener("drop", e => {
-            e.preventDefault();
-            trash.classList.remove("drag-over", "active");
-            
-            const draggingWrapper = document.querySelector('.dropped-game-wrapper.dragging');
-            if (draggingWrapper) {
-                draggingWrapper.remove();
+        new Sortable(trash, {
+            group: 'shared-category-group',
+            onAdd: (evt) => {
+                evt.item.remove();
                 playSound('drop');
                 showToast("Removed from category");
+                hideTrashZone();
                 saveAppState();
             }
         });
@@ -1339,12 +1328,33 @@
         if (catName) { createCategorySlot(catName); input.value = ""; saveAppState(); }
     }
 
-    // --- GOTY DROP SLOT HANDLERS ---
+    // --- GOTY DROP SLOT SORTABLEJS HANDLER ---
     function setupGotyDropSlot() {
         const slot = document.getElementById("goty-drop-slot");
         if(!slot) return;
 
         if(!isSharedView) {
+            new Sortable(slot, {
+                group: 'shared-category-group',
+                animation: 200,
+                delay: 150,
+                delayOnTouchOnly: true,
+                touchStartThreshold: 5,
+                onAdd: (evt) => {
+                    const gameId = evt.item.dataset.gameId || evt.item.dataset.gameWrapperId || evt.item.querySelector('[data-game-id]')?.dataset.gameId;
+                    evt.item.remove();
+                    if (gameId) {
+                        const game = games.find(g => g.id === gameId);
+                        if (game) {
+                            gotyGameId = game.id;
+                            playSound('drop');
+                            renderGotySlot();
+                            saveAppState();
+                        }
+                    }
+                }
+            });
+
             slot.onclick = async (e) => {
                 if (isSharedView || !selectedGameIdForTap) return;
                 if (e.target.classList.contains('remove-game-btn')) return;
@@ -1358,27 +1368,6 @@
                 }
                 clearTapSelection();
             };
-
-            slot.addEventListener("dragover", e => { 
-                e.preventDefault(); 
-                e.dataTransfer.dropEffect = "move";
-                slot.classList.add("drag-over"); 
-            });
-            slot.addEventListener("dragleave", () => slot.classList.remove("drag-over"));
-            slot.addEventListener("drop", async e => {
-                e.preventDefault(); slot.classList.remove("drag-over");
-                playSound('drop');
-                
-                const gameId = e.dataTransfer.getData("text/plain");
-                const game = games.find(g => g.id === gameId);
-                
-                if (game) {
-                    gotyGameId = game.id;
-                    logDebug("Dropped GOTY game: " + game.name);
-                    renderGotySlot();
-                    saveAppState();
-                }
-            });
         }
     }
 
@@ -1568,36 +1557,20 @@
         const container = document.getElementById("game-list-container");
         if (!container || isSharedView) return;
 
-        container.addEventListener("dragover", e => {
-            e.preventDefault();
-            e.dataTransfer.dropEffect = "move";
-            const draggingItem = container.querySelector(".game-item.dragging");
-            if (!draggingItem) return;
-
-            const afterElement = getDragAfterElementVertical(container, e.clientY);
-            if (afterElement == null) {
-                if (container.lastElementChild !== draggingItem) {
-                    container.appendChild(draggingItem);
-                }
-            } else {
-                if (afterElement !== draggingItem && afterElement !== draggingItem.nextSibling) {
-                    container.insertBefore(draggingItem, afterElement);
-                }
+        new Sortable(container, {
+            animation: 200,
+            delay: 150,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
+            ghostClass: 'dragging',
+            filter: 'button, input',
+            preventOnFilter: false,
+            onEnd: () => {
+                syncGamesArrayFromDOM();
+                saveAppState();
+                renderSidebar();
             }
         });
-    }
-
-    function getDragAfterElementVertical(container, y) {
-        const draggableElements = [...container.querySelectorAll('.game-item:not(.dragging)')];
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const offset = y - box.top - box.height / 2;
-            if (offset < 0 && offset > closest.offset) {
-                return { offset: offset, element: child };
-            } else {
-                return closest;
-            }
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
     }
 
     function closeModal(id) { document.getElementById(id).style.display = "none"; if(id==='icon-modal') activeModalGameId=null; if(id==='store-modal') document.getElementById('store-modal-body').innerHTML=""; }
@@ -1683,25 +1656,6 @@
             d.className = "game-item";
             d.dataset.gameId = g.id;
 
-            if (!isSharedView) {
-                d.draggable = true;
-                d.addEventListener("dragstart", (e) => {
-                    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'INPUT') {
-                        e.preventDefault();
-                        return;
-                    }
-                    d.classList.add("dragging");
-                    e.dataTransfer.setData("text/plain", g.id);
-                    e.dataTransfer.effectAllowed = "all";
-                });
-                d.addEventListener("dragend", () => {
-                    d.classList.remove("dragging");
-                    syncGamesArrayFromDOM();
-                    saveAppState();
-                    renderSidebar();
-                });
-            }
-
             const clickAction = isSharedView ? `openStoreModal('${g.id}')` : `openIconModal('${g.id}')`;
             const tooltipText = isSharedView ? `Click for store info` : `Change icon`;
 
@@ -1737,7 +1691,7 @@
         if(isSharedView) return;
         const s = document.getElementById("icon-sidebar"); s.innerHTML = "";
         games.forEach(g => {
-            const d = document.createElement("div"); d.className = "sidebar-item"; d.draggable = true; 
+            const d = document.createElement("div"); d.className = "sidebar-item";
             d.dataset.gameId = g.id;
             
             d.onclick = (e) => {
@@ -1749,15 +1703,26 @@
                 }
             };
 
-            d.addEventListener("dragstart", (e) => {
-                e.dataTransfer.setData("text/plain", g.id);
-                e.dataTransfer.effectAllowed = "all";
-            });
-            d.innerHTML = `<div style="width:100%; text-align:center;"><img src="${g.icon}" class="draggable-icon" onerror="this.onerror=null; this.src='https://placehold.co/150x200/2a2a2a/bb86fc?text=${encodeURIComponent(g.name.substring(0,2).toUpperCase())}';"></div><span class="sidebar-game-name">${g.name}</span>`; s.appendChild(d);
+            d.innerHTML = `<div style="width:100%; text-align:center;"><img src="${g.icon}" class="draggable-icon" onerror="this.onerror=null; this.src='https://placehold.co/150x200/2a2a2a/bb86fc?text=${encodeURIComponent(g.name.substring(0,2).toUpperCase())}';"></div><span class="sidebar-game-name">${g.name}</span>`; 
+            s.appendChild(d);
+        });
+
+        if (s._sortable) s._sortable.destroy();
+        s._sortable = new Sortable(s, {
+            group: {
+                name: 'shared-category-group',
+                pull: 'clone',
+                put: false
+            },
+            sort: false,
+            animation: 200,
+            delay: 150,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5
         });
     }
 
-    // --- CATEGORY SLOT, EDITABLE HEADERS & DYNAMIC REORDER LOGIC ---
+    // --- CATEGORY SLOT & SORTABLEJS REORDER LOGIC ---
     function createCategorySlot(catName, initialGameIds = [], descriptionText = "") {
         const grid = document.getElementById("category-grid");
         const slot = document.createElement("div"); slot.className = "category-slot";
@@ -1808,6 +1773,40 @@
         initialGameIds.forEach(id => { const g = games.find(x => x.id === id); if (g) appendGameToCategory(dropC, g); });
 
         if(!isSharedView) {
+            new Sortable(dropC, {
+                group: 'shared-category-group',
+                animation: 200,
+                delay: 150,
+                delayOnTouchOnly: true,
+                touchStartThreshold: 5,
+                ghostClass: 'dragging',
+                onStart: () => showTrashZone(),
+                onEnd: () => {
+                    hideTrashZone();
+                    saveAppState();
+                },
+                onAdd: (evt) => {
+                    hideTrashZone();
+                    const addedEl = evt.item;
+                    let gameId = addedEl.dataset.gameId || addedEl.dataset.gameWrapperId || addedEl.querySelector('[data-game-id]')?.dataset.gameId;
+                    
+                    const game = games.find(g => g.id === gameId);
+                    if (game) {
+                        const existing = dropC.querySelectorAll(`[data-game-wrapper-id="${game.id}"]`);
+                        if (existing.length > 1) {
+                            addedEl.remove();
+                        } else {
+                            const newWrapper = createGameWrapperNode(game);
+                            dropC.replaceChild(newWrapper, addedEl);
+                        }
+                    } else {
+                        addedEl.remove();
+                    }
+                    playSound('drop');
+                    saveAppState();
+                }
+            });
+
             slot.onclick = (e) => {
                 if (isSharedView || !selectedGameIdForTap) return;
                 if (e.target.classList.contains('remove-game-btn') || e.target.classList.contains('delete-category-btn') || e.target.isContentEditable) return;
@@ -1820,94 +1819,16 @@
                 }
                 clearTapSelection();
             };
-
-            slot.addEventListener("dragover", e => { 
-                e.preventDefault(); 
-                e.dataTransfer.dropEffect = "move";
-                slot.classList.add("drag-over");
-                
-                const draggingWrapper = document.querySelector('.dropped-game-wrapper.dragging');
-                if (draggingWrapper) {
-                    const afterElement = getDragAfterElementHorizontal(dropC, e.clientX, e.clientY);
-                    if (afterElement == null) {
-                        if (dropC.lastElementChild !== draggingWrapper) {
-                            dropC.appendChild(draggingWrapper);
-                        }
-                    } else {
-                        if (afterElement !== draggingWrapper && afterElement !== draggingWrapper.nextSibling) {
-                            dropC.insertBefore(draggingWrapper, afterElement);
-                        }
-                    }
-                }
-            });
-
-            slot.addEventListener("dragleave", (e) => {
-                if (!slot.contains(e.relatedTarget)) {
-                    slot.classList.remove("drag-over");
-                }
-            });
-
-            slot.addEventListener("drop", e => {
-                e.preventDefault(); 
-                slot.classList.remove("drag-over");
-                
-                const draggingWrapper = document.querySelector('.dropped-game-wrapper.dragging');
-                if (draggingWrapper) {
-                    playSound('drop');
-                    saveAppState();
-                    return;
-                }
-
-                const gameId = e.dataTransfer.getData("text/plain");
-                const game = games.find(x => x.id === gameId);
-                
-                if (game && !dropC.querySelector(`[data-game-wrapper-id="${game.id}"]`)) { 
-                    appendGameToCategory(dropC, game); 
-                    playSound('drop');
-                    saveAppState(); 
-                }
-            });
         }
         grid.appendChild(slot);
     }
 
-    function getDragAfterElementHorizontal(container, x, y) {
-        const draggableElements = [...container.querySelectorAll('.dropped-game-wrapper:not(.dragging)')];
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const boxCenterX = box.left + box.width / 2;
-            const boxCenterY = box.top + box.height / 2;
-            const distance = Math.hypot(x - boxCenterX, y - boxCenterY);
-            
-            if (distance < closest.distance && x < boxCenterX) {
-                return { distance: distance, element: child };
-            } else {
-                return closest;
-            }
-        }, { distance: Number.POSITIVE_INFINITY }).element;
-    }
-
-    function appendGameToCategory(container, game) {
+    function createGameWrapperNode(game) {
         const w = document.createElement("div"); 
         w.className = "dropped-game-wrapper pop-in"; 
         w.dataset.gameWrapperId = game.id;
+        w.dataset.gameId = game.id;
         w.addEventListener("animationend", () => w.classList.remove("pop-in"), { once: true });
-
-        if(!isSharedView) {
-            w.draggable = true;
-            w.addEventListener("dragstart", (e) => {
-                e.stopPropagation();
-                e.dataTransfer.setData("text/plain", game.id);
-                e.dataTransfer.effectAllowed = "all";
-                w.classList.add("dragging");
-                showTrashZone();
-            });
-            w.addEventListener("dragend", () => {
-                w.classList.remove("dragging");
-                hideTrashZone();
-                saveAppState();
-            });
-        }
 
         const img = document.createElement("img"); 
         img.src = game.icon; 
@@ -1927,6 +1848,11 @@
             w.appendChild(btn);
         }
         
+        return w;
+    }
+
+    function appendGameToCategory(container, game) {
+        const w = createGameWrapperNode(game);
         container.appendChild(w);
     }
 </script>
