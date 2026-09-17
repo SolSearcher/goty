@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="referrer" content="strict-origin-when-cross-origin">
+    
+    <!-- Lock Dark Reader and Declare Native Dark Color Scheme -->
+    <meta name="darkreader-lock">
+    <meta name="color-scheme" content="dark">
+
     <title>Game List 2026</title>
 
     <!-- Modern Geometric & Gamer Fonts -->
@@ -23,6 +28,7 @@
 
     <style>
         :root {
+            color-scheme: dark;
             --text-color: #f0f0f0;
             --accent: #bb86fc;
             --accent-glow: rgba(187, 134, 252, 0.4);
@@ -140,7 +146,30 @@
             letter-spacing: 1px;
         }
 
-        .input-section { display: flex; gap: 15px; margin-bottom: 25px; }
+        .input-section { display: flex; gap: 15px; margin-bottom: 12px; }
+
+        /* INSTRUCTION / HELPER BANNER STYLES */
+        .helper-text {
+            font-size: 13px;
+            color: #aaa;
+            text-align: center;
+            margin-bottom: 25px;
+            font-weight: 500;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 10px 18px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
+            align-self: center;
+        }
+        .helper-text span.highlight {
+            color: #03dac6;
+            font-weight: 700;
+        }
 
         input[type="text"], textarea {
             font-family: 'Outfit', sans-serif;
@@ -241,6 +270,71 @@
             border-color: #03dac6;
             color: #03dac6;
             box-shadow: 0 0 12px rgba(3, 218, 198, 0.2);
+        }
+
+        .note-toggle-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #aaa;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: none;
+            transition: all 0.2s ease;
+        }
+        .note-toggle-btn:hover {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            transform: none;
+            box-shadow: none;
+        }
+        .note-toggle-btn.active {
+            background: rgba(187, 134, 252, 0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 12px rgba(187, 134, 252, 0.2);
+        }
+
+        .game-note-drawer {
+            width: 100%;
+            margin-top: 12px;
+        }
+
+        .game-note-textarea {
+            width: 100%;
+            height: 80px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            padding: 12px 16px;
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        .game-note-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        .game-note-display {
+            display: none;
+            width: 100%;
+            margin-top: 12px;
+            font-style: italic;
+            color: #ddd;
+            font-size: 15px;
+            line-height: 1.5;
+            background: rgba(0, 0, 0, 0.25);
+            padding: 12px 18px;
+            border-radius: 12px;
+            border-left: 3px solid var(--accent);
+            box-sizing: border-box;
+            word-break: break-word;
         }
 
         .game-icon-wrapper { position: relative; cursor: pointer; display: inline-block; width: 130px; text-align: center; flex-shrink: 0; }
@@ -378,7 +472,7 @@
         .category-slot {
             background: rgba(0, 0, 0, 0.18); border: 2px dashed rgba(255,255,255,0.12); border-radius: 16px;
             display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-start;
-            min-height: 240px; padding: 25px; transition: background 0.3s, border-color 0.3s, transform 0.3s;
+            min-height: 250px; padding: 25px; transition: background 0.3s, border-color 0.3s, transform 0.3s;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.3); width: 100%; box-sizing: border-box;
             position: relative;
             backdrop-filter: blur(8px);
@@ -417,28 +511,64 @@
         }
         .delete-category-btn:hover { opacity: 1; color: #ff859b; transform: scale(1.2); background: transparent; box-shadow: none; }
 
-        .dropped-icons-container { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: flex-start; width: 100%; min-height: 130px; }
+        /* INCREASED HEIGHT AND SPACING FOR DYNAMIC NESTLING */
+        .dropped-icons-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            gap: 16px; 
+            align-items: center; 
+            justify-content: flex-start; 
+            width: 100%; 
+            min-height: 150px; 
+        }
         
-        /* DYNAMIC PINTEREST-STYLE SHELF */
         .dropped-game-wrapper { 
-            position: relative; display: inline-flex; align-items: center; justify-content: center;
-            height: 130px; width: auto;
-            background: transparent; border: none; padding: 0;
-            border-radius: 8px; cursor: grab; transition: transform 0.2s, filter 0.2s;
+            position: relative; 
+            display: inline-flex; 
+            align-items: center; 
+            justify-content: center;
+            height: 150px; /* Taller box art display so portrait titles stand tall */
+            width: auto;
+            background: transparent; 
+            border: none; 
+            padding: 0;
+            border-radius: 10px; 
+            cursor: grab; 
+            transition: transform 0.25s ease, filter 0.25s ease;
             box-sizing: border-box;
             user-select: none;
         }
         .dropped-game-wrapper.pop-in { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .dropped-game-wrapper:active { cursor: grabbing; }
 
+        /* SORTABLEJS COMPACT DRAG GHOST PREVIEW STYLES */
+        .sortable-ghost {
+            opacity: 0.35 !important;
+            background: rgba(187, 134, 252, 0.2) !important;
+            border: 2px dashed var(--accent) !important;
+            border-radius: 8px !important;
+            box-sizing: border-box !important;
+        }
+
+        .dropped-icons-container .sortable-ghost {
+            width: 100px !important;
+            height: 150px !important;
+            max-width: 140px !important;
+            flex-shrink: 0 !important;
+        }
+
         .dropped-icon {
-            height: 100%; width: auto; max-width: 220px;
-            border-radius: 8px; object-fit: contain;
-            filter: drop-shadow(0 6px 14px rgba(0,0,0,0.7)); transition: 0.2s;
+            height: 100%; 
+            width: auto; 
+            max-width: 280px;
+            border-radius: 10px; 
+            object-fit: contain; /* STRICT ASPECT RATIO PRESERVATION */
+            filter: drop-shadow(0 6px 14px rgba(0,0,0,0.7)); 
+            transition: 0.2s;
             pointer-events: none;
         }
-        .dropped-game-wrapper:hover { transform: translateY(-4px); }
-        .dropped-game-wrapper:hover .dropped-icon { filter: drop-shadow(0 10px 22px rgba(187, 134, 252, 0.4)) brightness(1.1); }
+        .dropped-game-wrapper:hover { transform: translateY(-5px) scale(1.02); }
+        .dropped-game-wrapper:hover .dropped-icon { filter: drop-shadow(0 10px 24px rgba(187, 134, 252, 0.45)) brightness(1.08); }
 
         .remove-game-btn {
             position: absolute; top: -6px; right: -6px; background: #cf6679; color: white; border: none; border-radius: 50%;
@@ -645,7 +775,7 @@
             .category-slot { padding: 15px; min-height: 160px; }
             .category-title { font-size: 20px; }
             
-            .dropped-game-wrapper { height: 100px; }
+            .dropped-game-wrapper { height: 110px; }
 
             .goty-section { padding: 20px 12px; }
             .goty-title { font-size: 24px; }
@@ -659,8 +789,9 @@
             .export-btn { width: 100%; text-align: center; padding: 12px 20px; }
         }
 
-        /* --- VIEW-ONLY (SHARED PREVIEW) STATE CSS --- */
+        /* --- VIEW-ONLY (SHARED PREVIEW) & PNG EXPORT STATE CSS --- */
         body.shared-view .input-section,
+        body.shared-view .helper-text,
         body.shared-view .category-adder,
         body.shared-view .sidebar,
         body.shared-view .remove-game-btn,
@@ -670,18 +801,55 @@
         body.shared-view .theme-accordion,
         body.shared-view .delete-category-btn,
         body.shared-view .finish-toggle-btn,
-        body.shared-view .export-btn:not(.create-own) { display: none !important; }
+        body.shared-view .export-btn:not(.create-own),
+        body.export-mode .input-section,
+        body.export-mode .helper-text,
+        body.export-mode .awards-controls,
+        body.export-mode .sidebar,
+        body.export-mode .remove-game-btn,
+        body.export-mode .delete-btn,
+        body.export-mode .name-input,
+        body.export-mode .goty-textarea,
+        body.export-mode .game-note-drawer,
+        body.export-mode .theme-accordion,
+        body.export-mode .goty-video-player-box,
+        body.export-mode .delete-category-btn,
+        body.export-mode .finish-toggle-btn,
+        body.export-mode .export-section { display: none !important; }
         
         body.shared-view .category-title,
-        body.shared-view .category-subtitle { contenteditable: false !important; pointer-events: none; }
+        body.shared-view .category-subtitle,
+        body.export-mode .category-title,
+        body.export-mode .category-subtitle { contenteditable: false !important; pointer-events: none; }
 
         body.shared-view .shared-list-title { display: block; }
-        body.shared-view .name-display-text { display: inline-block; }
+        body.shared-view .name-display-text,
+        body.export-mode .name-display-text { display: inline-block !important; }
+        
         body.shared-view .export-btn.create-own { display: inline-block; }
-        body.shared-view .category-slot { border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); }
-        body.shared-view .goty-blurb-display { display: block; }
+        body.shared-view .category-slot,
+        body.export-mode .category-slot { border: 1px solid rgba(255,255,255,0.1) !important; background: rgba(0,0,0,0.4) !important; }
+        
+        body.shared-view .goty-blurb-display,
+        body.export-mode .goty-blurb-display { display: block !important; }
 
-        body.shared-view .goty-drop-slot { border: none !important; background: transparent !important; padding: 0 !important; }
+        body.export-mode .list-section {
+            max-height: none !important;
+            overflow: visible !important;
+            background: var(--element-glass) !important;
+        }
+
+        body.export-mode .game-item {
+            cursor: default !important;
+        }
+
+        body.export-mode .game-icon-wrapper::after {
+            display: none !important;
+        }
+
+        body.shared-view .goty-drop-slot,
+        body.export-mode .goty-drop-slot { border: none !important; background: transparent !important; padding: 0 !important; }
+        
         body.shared-view .goty-container {
             visibility: hidden;
             height: 0;
@@ -741,6 +909,11 @@
         <input type="text" id="game-input" placeholder="Type a game (e.g. Donkey Kong Bananza)...">
         <button id="add-btn" onclick="addGame()">Add Game</button>
     </section>
+
+    <!-- INSTRUCTION & HELPER GUIDANCE BANNER -->
+    <div class="helper-text">
+        💡 <span class="highlight">Tip:</span> Click or tap any game cover art below to swap artwork or search Google for direct URLs!
+    </div>
 
     <h3 class="shared-list-title">ALL GAMES PLAYED</h3>
     <section class="list-section" id="game-list-container"></section>
@@ -1355,10 +1528,24 @@
         navigator.clipboard.writeText(shareUrl).then(() => showToast("🔗 Compact link copied!")).catch(() => prompt("Copy this URL:", shareUrl));
     }
 
-    // Instant PNG Image Exporter using HTML2Canvas
+    // Cleaned-Up Image Exporter with Full Top-List Expansion & Hidden Controls
     async function exportPNG() {
         showToast("📸 Generating image...");
         const container = document.querySelector('.container');
+        
+        // Sync display elements for the export snapshot
+        const nameVal = document.getElementById("user-name-input").value.trim();
+        document.getElementById("name-display").innerText = nameVal || "Anonymous";
+        
+        const blurbVal = document.getElementById("goty-blurb-input").value.trim();
+        document.getElementById("goty-blurb-display").innerText = blurbVal || "";
+
+        // Enable Export Mode Styles (Expands top list fully, hides buttons & audio display)
+        document.body.classList.add('export-mode');
+
+        // Allow DOM to compute updated layout
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         try {
             const canvas = await html2canvas(container, {
                 backgroundColor: '#0a0a0f',
@@ -1368,7 +1555,7 @@
             });
             const image = canvas.toDataURL("image/png");
             const a = document.createElement("a");
-            const name = (getFullAppState().userName || "My").replace(/\s+/g, '_');
+            const name = (nameVal || "My").replace(/\s+/g, '_');
             a.href = image;
             a.download = `${name}_2026_Game_List.png`;
             a.click();
@@ -1376,6 +1563,8 @@
         } catch(err) {
             logDebug("PNG Export Error: " + err.message);
             alert("Could not generate image. Some external images may be blocking export due to CORS restrictions.");
+        } finally {
+            document.body.classList.remove('export-mode');
         }
     }
 
@@ -1552,25 +1741,7 @@
             }
         };
 
-        // 1. Wikipedia Summary REST API (PRIORITY 1: Official Infobox Box/Cover Art)
-        for (const v of variants) {
-            const cleanV = v.trim().replace(/ /g, '_');
-            const wikiTitles = [cleanV, cleanV + '_(video_game)'];
-            for (const title of wikiTitles) {
-                try {
-                    const wikiSummaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
-                    const res = await fetch(wikiSummaryUrl);
-                    if (res.ok) {
-                        const data = await res.json();
-                        if (data.thumbnail?.source) {
-                            addOption(data.thumbnail.source);
-                        }
-                    }
-                } catch(e) {}
-            }
-        }
-
-        // 2. CheapShark API (Extract Steam App ID & Vertical 600x900 Poster)
+        // 1. CheapShark API (FIRST PRIORITY: Extract Steam App ID & Modern Vertical Library Box Art)
         for (const queryVariant of variants) {
             if (steamId) break;
             try {
@@ -1595,6 +1766,24 @@
                     });
                 }
             } catch (e) {}
+        }
+
+        // 2. Wikipedia Summary REST API
+        for (const v of variants) {
+            const cleanV = v.trim().replace(/ /g, '_');
+            const wikiTitles = [cleanV, cleanV + '_(video_game)'];
+            for (const title of wikiTitles) {
+                try {
+                    const wikiSummaryUrl = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`;
+                    const res = await fetch(wikiSummaryUrl);
+                    if (res.ok) {
+                        const data = await res.json();
+                        if (data.thumbnail?.source) {
+                            addOption(data.thumbnail.source);
+                        }
+                    }
+                } catch(e) {}
+            }
         }
 
         // 3. Wikipedia Search Generator API (Box/Cover Art Pages)
@@ -1628,7 +1817,7 @@
         const input = document.getElementById("game-input"), addBtn = document.getElementById("add-btn"), gameName = input.value.trim();
         if (!gameName) return; addBtn.innerText = "Fetching..."; addBtn.disabled = true;
         const data = await fetchGameData(gameName);
-        games.unshift({ id: 'game_' + Date.now(), name: gameName, icon: data.icons[0], steamAppID: data.steamAppID, finished: false });
+        games.unshift({ id: 'game_' + Date.now(), name: gameName, icon: data.icons[0], steamAppID: data.steamAppID, finished: false, note: '' });
         input.value = ""; addBtn.innerText = "Add Game"; addBtn.disabled = false;
         renderMainList(); renderSidebar(); saveAppState();
     }
@@ -1639,6 +1828,49 @@
             game.finished = !game.finished;
             renderMainList();
             saveAppState();
+        }
+    }
+
+    function toggleNoteField(gameId) {
+        const drawer = document.getElementById(`note-drawer-${gameId}`);
+        if (drawer) {
+            const isHidden = window.getComputedStyle(drawer).display === 'none';
+            drawer.style.display = isHidden ? 'block' : 'none';
+            if (isHidden) {
+                const textarea = drawer.querySelector('textarea');
+                if (textarea) textarea.focus();
+            }
+        }
+    }
+
+    function updateGameNote(gameId, val) {
+        const game = games.find(g => g.id === gameId);
+        if (game) {
+            game.note = val;
+            saveAppState();
+
+            const item = document.querySelector(`.game-item[data-game-id="${gameId}"]`);
+            if (item) {
+                let displayEl = item.querySelector('.game-note-display');
+                const hasText = val && val.trim().length > 0;
+                
+                if (hasText) {
+                    if (!displayEl) {
+                        displayEl = document.createElement('div');
+                        displayEl.className = 'game-note-display';
+                        item.appendChild(displayEl);
+                    }
+                    displayEl.innerHTML = `"${val.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}"`;
+                } else if (displayEl) {
+                    displayEl.remove();
+                }
+
+                const noteBtn = item.querySelector('.note-toggle-btn');
+                if (noteBtn) {
+                    noteBtn.className = hasText ? 'note-toggle-btn active' : 'note-toggle-btn';
+                    noteBtn.innerText = hasText ? '📝 Note ✅' : '📝 Note';
+                }
+            }
         }
     }
 
@@ -1665,7 +1897,7 @@
             delay: 0,
             forceFallback: false,
             ghostClass: 'dragging',
-            filter: 'button, input',
+            filter: 'button, input, textarea',
             preventOnFilter: false,
             onEnd: () => {
                 syncGamesArrayFromDOM();
@@ -1762,6 +1994,7 @@
             const tooltipText = isSharedView ? `Click for store info` : `Change icon`;
 
             const finishedBadge = g.finished ? `<span class="finished-badge" title="Finished">✅</span>` : '';
+            const hasNote = g.note && g.note.trim().length > 0;
 
             let innerContent = `
                 <div class="game-info">
@@ -1775,11 +2008,25 @@
             if (!isSharedView) {
                 const finishedBtnClass = g.finished ? 'finish-toggle-btn finished' : 'finish-toggle-btn';
                 const finishedBtnText = g.finished ? 'Finished ✅' : 'Finished?';
+                const noteBtnClass = hasNote ? 'note-toggle-btn active' : 'note-toggle-btn';
+                const noteBtnText = hasNote ? '📝 Note ✅' : '📝 Note';
 
                 innerContent += `
                     <div class="game-item-actions">
+                        <button class="${noteBtnClass}" onclick="toggleNoteField('${g.id}')">${noteBtnText}</button>
                         <button class="${finishedBtnClass}" onclick="toggleGameFinished('${g.id}')">${finishedBtnText}</button>
                         <button class="delete-btn" onclick="deleteGame('${g.id}')">Delete</button>
+                    </div>
+                    <div class="game-note-drawer" id="note-drawer-${g.id}" style="display: ${hasNote ? 'block' : 'none'};">
+                        <textarea class="game-note-textarea" placeholder="Write notes, review, or thoughts on ${g.name.replace(/"/g, '&quot;')}..." oninput="updateGameNote('${g.id}', this.value)">${g.note || ''}</textarea>
+                    </div>
+                `;
+            }
+
+            if (hasNote) {
+                innerContent += `
+                    <div class="game-note-display">
+                        "${g.note.replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>')}"
                     </div>
                 `;
             }
@@ -1901,7 +2148,7 @@
                     animation: 150,
                     delay: 0,
                     forceFallback: false,
-                    ghostClass: 'dragging',
+                    ghostClass: 'sortable-ghost',
                     onEnd: () => {
                         saveAppState();
                     },
@@ -1911,12 +2158,22 @@
                         
                         const game = games.find(g => g.id === gameId);
                         if (game) {
-                            const existing = dropC.querySelectorAll(`[data-game-wrapper-id="${game.id}"]`);
-                            if (existing.length > 1) {
+                            const existingCount = Array.from(dropC.children).filter(el => {
+                                if (el === addedEl) return false;
+                                const elGameId = el.dataset.gameId || el.dataset.gameWrapperId;
+                                return elGameId === game.id;
+                            }).length;
+
+                            if (existingCount > 0) {
                                 addedEl.remove();
+                                showToast(`${game.name} is already in this category`);
                             } else {
                                 const newWrapper = createGameWrapperNode(game);
-                                dropC.replaceChild(newWrapper, addedEl);
+                                if (addedEl.parentNode === dropC) {
+                                    dropC.replaceChild(newWrapper, addedEl);
+                                } else {
+                                    dropC.appendChild(newWrapper);
+                                }
                             }
                         } else {
                             addedEl.remove();
@@ -1931,9 +2188,14 @@
                 if (e.target.classList.contains('remove-game-btn') || e.target.classList.contains('delete-category-btn') || e.target.isContentEditable) return;
 
                 const game = games.find(x => x.id === selectedGameIdForTap);
-                if (game && !dropC.querySelector(`[data-game-wrapper-id="${game.id}"]`)) {
-                    appendGameToCategory(dropC, game);
-                    saveAppState();
+                if (game) {
+                    const existingCount = dropC.querySelectorAll(`[data-game-wrapper-id="${game.id}"]`).length;
+                    if (existingCount > 0) {
+                        showToast(`${game.name} is already in this category`);
+                    } else {
+                        appendGameToCategory(dropC, game);
+                        saveAppState();
+                    }
                 }
                 clearTapSelection();
             };
