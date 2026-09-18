@@ -98,10 +98,9 @@
             left: 0;
             right: 0;
             bottom: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             height: 100dvh;
-            min-height: -webkit-fill-available;
             z-index: -1;
             pointer-events: none;
         }
@@ -140,7 +139,7 @@
             line-height: 1;
         }
 
-        /* HEADER BUBBLE ROW (NAME & CUSTOMIZE THEME SIDE-BY-SIDE) */
+        /* HEADER BUBBLE ROW */
         .header-bubbles-row {
             display: flex;
             align-items: center;
@@ -303,7 +302,7 @@
         }
         button:hover { background-color: #d0a8ff; transform: translateY(-3px); box-shadow: 0 8px 25px var(--accent-glow); }
 
-        /* PHASE TRANSITION BUTTON ("CONTINUE TO AWARDS") */
+        /* PHASE TRANSITION BUTTON */
         .proceed-phase-wrapper {
             display: flex;
             justify-content: center;
@@ -593,97 +592,46 @@
         /* PARTIFUL-STYLE THEME CUSTOMIZATION POP-DOWN PANEL */
         .theme-option-group { margin-bottom: 25px; text-align: left; }
         .theme-option-label { font-weight: 700; font-size: 13px; color: var(--accent); margin-bottom: 12px; display: block; text-transform: uppercase; letter-spacing: 1.5px; }
-        
-        .theme-scroll-row {
-            display: flex;
-            gap: 12px;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 12px 8px 16px 8px; /* Padded to prevent hover transform clipping */
-            margin-top: -4px;
-            scroll-behavior: smooth;
-            -webkit-overflow-scrolling: touch;
-        }
 
-        .theme-choice-btn { 
-            flex-shrink: 0;
-            background: rgba(255,255,255,0.06); 
-            border: 1px solid var(--border); 
-            color: #fff; 
-            padding: 14px 20px; 
-            border-radius: 14px; 
-            font-size: 14px; 
-            font-weight: 600; 
+        /* OPTIMIZED COVER ART SELECTION MODAL STYLES */
+        .icon-options-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); 
+            gap: 15px; 
+            margin: 20px 0; 
+            max-height: 350px; 
+            overflow-y: auto; 
+            padding: 10px; 
+        }
+        .option-card { 
+            border: 2px solid transparent; 
+            border-radius: 12px; 
+            padding: 10px; 
+            background: rgba(0,0,0,0.4); 
             cursor: pointer; 
-            transition: all 0.2s ease; 
-            box-shadow: none; 
-            text-shadow: none; 
-            text-align: center; 
-            white-space: nowrap;
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            transition: 0.2s; 
+            height: 140px; 
+            box-sizing: border-box; 
+            overflow: hidden; 
         }
-        .theme-choice-btn:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .theme-choice-btn.active { border-color: #03dac6 !important; background: rgba(3, 218, 198, 0.15) !important; color: #03dac6 !important; box-shadow: 0 0 15px rgba(3, 218, 198, 0.3) !important; }
+        .option-card:hover { border-color: var(--accent); background: rgba(187, 134, 252, 0.15); transform: scale(1.05); }
+        .option-card img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; border-radius: 6px; }
 
-        /* INDIVIDUAL FONT PREVIEW STYLES (EXPLICIT FONT FAMILIES) */
-        #font-btn-default { font-family: 'Righteous', cursive !important; }
-        #font-btn-pixel { font-family: 'Press Start 2P', cursive !important; font-size: 10px; }
-        #font-btn-gothic { font-family: 'Grenze Gotisch', cursive !important; font-size: 16px; }
-        #font-btn-medieval { font-family: 'MedievalSharp', cursive !important; font-size: 15px; }
-        #font-btn-pirata { font-family: 'Pirata One', cursive !important; font-size: 16px; }
-        #font-btn-almendra { font-family: 'Almendra', serif !important; font-size: 15px; }
-        #font-btn-oldgothic { font-family: 'UnifrakturMaguntia', cursive !important; font-size: 18px; }
-        #font-btn-cyber { font-family: 'Orbitron', sans-serif !important; font-size: 12px; }
-        #font-btn-comic { font-family: 'Bangers', cursive !important; font-size: 16px; letter-spacing: 1px; }
-        #font-btn-neon { font-family: 'Monoton', cursive !important; font-size: 12px; }
-        #font-btn-horror { font-family: 'Creepster', cursive !important; font-size: 16px; }
-        #font-btn-hacker { font-family: 'Fira Code', monospace !important; font-size: 12px; }
-        #font-btn-luxury { font-family: 'Abril Fatface', serif !important; font-size: 14px; }
-        #font-btn-cute { font-family: 'Fredoka', cursive !important; font-size: 14px; }
-        #font-btn-marker { font-family: 'Permanent Marker', cursive !important; font-size: 14px; }
-        #font-btn-silkscreen { font-family: 'Silkscreen', cursive !important; font-size: 11px; }
-
-        .custom-bg-input-row { display: flex; gap: 10px; margin-top: 10px; }
-        .custom-bg-input-row input { flex: 1; font-size: 14px; padding: 12px 20px; border-radius: 30px; }
-        .custom-bg-input-row button { padding: 12px 24px; font-size: 13px; }
-
-        .color-pickers-flex { display: flex; gap: 20px; flex-wrap: wrap; }
-        .color-picker-item { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 12px 18px; border-radius: 14px; border: 1px solid var(--border); }
-        .color-picker-input { -webkit-appearance: none; border: none; width: 42px; height: 44px; border-radius: 50%; cursor: pointer; background: transparent; }
-        .color-picker-input::-webkit-color-swatch-wrapper { padding: 0; }
-        .color-picker-input::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-
-        /* MOBILE MEDIA QUERIES */
-        @media (max-width: 768px) {
-            body { padding: 15px 8px; }
-            .container { padding: 18px 12px; border-radius: 16px; }
-            .main-title { font-size: 38px; }
-            .header-prefix { font-size: 18px; }
-            .name-input-bubble { font-size: 16px; width: 100%; }
-            .header-bubbles-row { flex-direction: column; align-items: stretch; width: 100%; gap: 10px; }
-            .header-bubble { width: 100%; max-width: 100% !important; justify-content: center; }
-            .input-section { flex-direction: column; gap: 10px; }
-            .input-section button { width: 100%; }
-            .awards-section { flex-direction: row; gap: 10px; align-items: flex-start; }
-            .sidebar { width: 95px; min-width: 95px; height: calc(100vh - 60px); position: sticky; top: 15px; padding: 12px 6px; flex-direction: column; overflow-y: auto; overflow-x: hidden; gap: 15px; }
-            .sidebar.collapsed { width: 32px !important; min-width: 32px !important; padding: 12px 2px !important; }
-            .sidebar-collapse-btn { top: -12px; }
-            .sidebar-item { width: 100%; min-width: unset; gap: 6px; }
-            .draggable-icon { max-height: 85px; }
-            .sidebar-game-name { font-size: 10px; }
-            .category-grid { grid-template-columns: 1fr; gap: 15px; }
-            .category-slot { padding: 15px; min-height: 160px; }
-            .category-title { font-size: 20px; }
-            .dropped-game-wrapper { height: 110px; }
-            .goty-section { padding: 20px 12px; }
-            .goty-title { font-size: 24px; }
-            .goty-container { flex-direction: column; gap: 15px; }
-            .goty-drop-slot { width: 100%; max-width: 220px; min-height: 180px; }
-            .goty-blurb-wrapper { width: 100%; min-width: unset; }
-            .goty-textarea { height: 140px; font-size: 15px; padding: 12px; }
-            .goty-video-frame { height: 210px; }
-            .export-section { gap: 10px; }
-            .export-btn { width: 100%; text-align: center; padding: 12px 20px; }
-        }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: rgba(25, 25, 30, 0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; width: 95%; max-width: 600px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); position: relative; box-sizing: border-box; }
+        .close-btn { position: absolute; top: 25px; right: 30px; font-size: 32px; cursor: pointer; color: #888; transition: 0.2s; }
+        .close-btn:hover { color: white; transform: rotate(90deg); }
+        .custom-url-section { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 25px; }
+        .custom-url-row { display: flex; gap: 10px; }
+        .search-web-btn { background-color: #03dac6; color: #000; }
+        .search-web-btn:hover { background-color: #4cfaf1; }
+        .store-links { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        .store-btn { display: block; padding: 14px; text-align: center; border-radius: 12px; text-decoration: none; color: white; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; transition: 0.2s; font-size: 13px; }
+        .store-btn.ps { background: #003791; } .store-btn.xb { background: #107C10; } .store-btn.nt { background: #E60012; }
+        .store-btn:hover { filter: brightness(1.2); transform: translateY(-3px); }
 
         /* VIEW-ONLY & EXPORT CSS MODES */
         body.shared-view .input-section,
@@ -749,19 +697,6 @@
 
         body.shared-view .game-icon-wrapper::after { display: none !important; }
         body.shared-view .game-icon-wrapper:hover .game-icon { transform: scale(1.05); }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: rgba(25, 25, 30, 0.95); border: 1px solid rgba(255,255,255,0.12); border-radius: 24px; width: 95%; max-width: 600px; padding: 40px; box-shadow: 0 20px 60px rgba(0,0,0,0.9); position: relative; box-sizing: border-box; }
-        .close-btn { position: absolute; top: 25px; right: 30px; font-size: 32px; cursor: pointer; color: #888; transition: 0.2s; }
-        .close-btn:hover { color: white; transform: rotate(90deg); }
-        .custom-url-section { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; border-top: 1px solid var(--border); padding-top: 25px; }
-        .custom-url-row { display: flex; gap: 10px; }
-        .search-web-btn { background-color: #03dac6; color: #000; }
-        .search-web-btn:hover { background-color: #4cfaf1; }
-        .store-links { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
-        .store-btn { display: block; padding: 14px; text-align: center; border-radius: 12px; text-decoration: none; color: white; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; transition: 0.2s; font-size: 13px; }
-        .store-btn.ps { background: #003791; } .store-btn.xb { background: #107C10; } .store-btn.nt { background: #E60012; }
-        .store-btn:hover { filter: brightness(1.2); transform: translateY(-3px); }
     </style>
 </head>
 <body>
@@ -825,22 +760,22 @@
 
         <div class="theme-option-group">
             <span class="theme-option-label">Color Customization Wheels</span>
-            <div class="color-pickers-flex">
-                <div class="color-picker-item">
-                    <input type="color" id="accent-color-picker" class="color-picker-input" value="#bb86fc" oninput="setAccentColor(this.value)">
-                    <span style="font-size:13px; color:#ddd; font-weight:600;">Accent & Glow Color</span>
+            <div class="theme-scroll-row">
+                <div class="color-picker-card">
+                    <input type="color" id="accent-color-picker" class="color-picker-input-circle" value="#bb86fc" oninput="setAccentColor(this.value)">
+                    <span class="color-picker-label">Accent & Glow Color</span>
                 </div>
-                <div class="color-picker-item">
-                    <input type="color" id="font-color-picker" class="color-picker-input" value="#f0f0f0" oninput="setFontColor(this.value)">
-                    <span style="font-size:13px; color:#ddd; font-weight:600;">General Text Color</span>
+                <div class="color-picker-card">
+                    <input type="color" id="font-color-picker" class="color-picker-input-circle" value="#f0f0f0" oninput="setFontColor(this.value)">
+                    <span class="color-picker-label">General Text Color</span>
                 </div>
-                <div class="color-picker-item">
-                    <input type="color" id="shader-color-picker" class="color-picker-input" value="#9b51e0" oninput="setCustomTint(this.value)">
-                    <span style="font-size:13px; color:#ddd; font-weight:600;">Shader Secondary Tint</span>
+                <div class="color-picker-card">
+                    <input type="color" id="shader-color-picker" class="color-picker-input-circle" value="#9b51e0" oninput="setCustomTint(this.value)">
+                    <span class="color-picker-label">Shader Secondary Tint</span>
                 </div>
-                <div class="color-picker-item">
-                    <input type="color" id="shader-bg-color-picker" class="color-picker-input" value="#0b0c16" oninput="setShaderBgColor(this.value)">
-                    <span style="font-size:13px; color:#ddd; font-weight:600;">Shader Base / Ambient Color</span>
+                <div class="color-picker-card">
+                    <input type="color" id="shader-bg-color-picker" class="color-picker-input-circle" value="#0b0c16" oninput="setShaderBgColor(this.value)">
+                    <span class="color-picker-label">Shader Base / Ambient Color</span>
                 </div>
             </div>
         </div>
@@ -1108,7 +1043,6 @@
     function unlockPhase2() {
         isPhase2Unlocked = true;
         document.body.classList.add('phase-2-unlocked');
-        showToast("✨ Award categories unlocked!");
         saveAppState();
     }
 
@@ -1153,17 +1087,11 @@
 
     if (gl) {
         function resizeCanvas() {
-            const w = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
-            const h = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
-            canvas.width = w;
-            canvas.height = h;
-            gl.viewport(0, 0, w, h);
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            gl.viewport(0, 0, canvas.width, canvas.height);
         }
         window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('orientationchange', resizeCanvas);
-        if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', resizeCanvas);
-        }
         resizeCanvas();
 
         const vsSource = `attribute vec4 aVertexPosition; void main() { gl_Position = aVertexPosition; }`;
