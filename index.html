@@ -91,10 +91,17 @@
             background-attachment: fixed;
         }
 
+        /* FULL-SCREEN IOS-SAFE SHADER CANVAS BOUNDS */
         #shader-bg {
             position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
+            height: 100dvh;
+            min-height: -webkit-fill-available;
             z-index: -1;
             pointer-events: none;
         }
@@ -115,7 +122,7 @@
 
         header {
             text-align: center;
-            margin-bottom: 25px;
+            margin-bottom: 45px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -222,7 +229,7 @@
             border: 1px solid var(--accent);
             border-radius: 20px;
             padding: 25px 30px;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             box-shadow: 0 15px 40px rgba(0,0,0,0.8), inset 0 0 20px var(--accent-glow);
             animation: popDown 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
@@ -239,7 +246,8 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 8px;
+            margin-top: 10px;
+            margin-bottom: 10px;
             text-align: left;
         }
 
@@ -582,14 +590,77 @@
         #toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(120px); opacity: 0; pointer-events: none; background: #03dac6; color: #000; padding: 14px 28px; border-radius: 50px; font-size: 16px; font-weight: 800; box-shadow: 0 10px 30px rgba(0,0,0,0.8); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease; z-index: 3000; }
         #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto; }
 
-        /* MOBILE MEDIA QUERIES (<768px) */
+        /* PARTIFUL-STYLE THEME CUSTOMIZATION POP-DOWN PANEL */
+        .theme-option-group { margin-bottom: 25px; text-align: left; }
+        .theme-option-label { font-weight: 700; font-size: 13px; color: var(--accent); margin-bottom: 12px; display: block; text-transform: uppercase; letter-spacing: 1.5px; }
+        
+        .theme-scroll-row {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 12px 8px 16px 8px; /* Padded to prevent hover transform clipping */
+            margin-top: -4px;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .theme-choice-btn { 
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.06); 
+            border: 1px solid var(--border); 
+            color: #fff; 
+            padding: 14px 20px; 
+            border-radius: 14px; 
+            font-size: 14px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.2s ease; 
+            box-shadow: none; 
+            text-shadow: none; 
+            text-align: center; 
+            white-space: nowrap;
+        }
+        .theme-choice-btn:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        .theme-choice-btn.active { border-color: #03dac6 !important; background: rgba(3, 218, 198, 0.15) !important; color: #03dac6 !important; box-shadow: 0 0 15px rgba(3, 218, 198, 0.3) !important; }
+
+        /* INDIVIDUAL FONT PREVIEW STYLES (EXPLICIT FONT FAMILIES) */
+        #font-btn-default { font-family: 'Righteous', cursive !important; }
+        #font-btn-pixel { font-family: 'Press Start 2P', cursive !important; font-size: 10px; }
+        #font-btn-gothic { font-family: 'Grenze Gotisch', cursive !important; font-size: 16px; }
+        #font-btn-medieval { font-family: 'MedievalSharp', cursive !important; font-size: 15px; }
+        #font-btn-pirata { font-family: 'Pirata One', cursive !important; font-size: 16px; }
+        #font-btn-almendra { font-family: 'Almendra', serif !important; font-size: 15px; }
+        #font-btn-oldgothic { font-family: 'UnifrakturMaguntia', cursive !important; font-size: 18px; }
+        #font-btn-cyber { font-family: 'Orbitron', sans-serif !important; font-size: 12px; }
+        #font-btn-comic { font-family: 'Bangers', cursive !important; font-size: 16px; letter-spacing: 1px; }
+        #font-btn-neon { font-family: 'Monoton', cursive !important; font-size: 12px; }
+        #font-btn-horror { font-family: 'Creepster', cursive !important; font-size: 16px; }
+        #font-btn-hacker { font-family: 'Fira Code', monospace !important; font-size: 12px; }
+        #font-btn-luxury { font-family: 'Abril Fatface', serif !important; font-size: 14px; }
+        #font-btn-cute { font-family: 'Fredoka', cursive !important; font-size: 14px; }
+        #font-btn-marker { font-family: 'Permanent Marker', cursive !important; font-size: 14px; }
+        #font-btn-silkscreen { font-family: 'Silkscreen', cursive !important; font-size: 11px; }
+
+        .custom-bg-input-row { display: flex; gap: 10px; margin-top: 10px; }
+        .custom-bg-input-row input { flex: 1; font-size: 14px; padding: 12px 20px; border-radius: 30px; }
+        .custom-bg-input-row button { padding: 12px 24px; font-size: 13px; }
+
+        .color-pickers-flex { display: flex; gap: 20px; flex-wrap: wrap; }
+        .color-picker-item { flex: 1; min-width: 220px; display: flex; align-items: center; gap: 15px; background: rgba(0,0,0,0.3); padding: 12px 18px; border-radius: 14px; border: 1px solid var(--border); }
+        .color-picker-input { -webkit-appearance: none; border: none; width: 42px; height: 44px; border-radius: 50%; cursor: pointer; background: transparent; }
+        .color-picker-input::-webkit-color-swatch-wrapper { padding: 0; }
+        .color-picker-input::-webkit-color-swatch { border: 2px solid #fff; border-radius: 50%; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+        /* MOBILE MEDIA QUERIES */
         @media (max-width: 768px) {
             body { padding: 15px 8px; }
             .container { padding: 18px 12px; border-radius: 16px; }
             .main-title { font-size: 38px; }
+            .header-prefix { font-size: 18px; }
+            .name-input-bubble { font-size: 16px; width: 100%; }
             .header-bubbles-row { flex-direction: column; align-items: stretch; width: 100%; gap: 10px; }
             .header-bubble { width: 100%; max-width: 100% !important; justify-content: center; }
-            .name-input-bubble { font-size: 18px; width: 100%; flex: 1; }
             .input-section { flex-direction: column; gap: 10px; }
             .input-section button { width: 100%; }
             .awards-section { flex-direction: row; gap: 10px; align-items: flex-start; }
@@ -1081,8 +1152,19 @@
     const gl = canvas.getContext('webgl');
 
     if (gl) {
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; gl.viewport(0, 0, canvas.width, canvas.height); }
-        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+        function resizeCanvas() {
+            const w = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0);
+            const h = Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0);
+            canvas.width = w;
+            canvas.height = h;
+            gl.viewport(0, 0, w, h);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', resizeCanvas);
+        }
+        resizeCanvas();
 
         const vsSource = `attribute vec4 aVertexPosition; void main() { gl_Position = aVertexPosition; }`;
         const fsSource = `
