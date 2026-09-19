@@ -8,7 +8,9 @@
     <!-- Lock Dark Reader and Declare Native Dark Color Scheme -->
     <meta name="darkreader-lock">
     <meta name="color-scheme" content="dark">
-    <meta id="browser-theme-color" name="theme-color" content="#3d245d">
+    <!-- The name is applied at startup on non-iOS browsers. Leaving it off on
+         iOS lets Safari use its translucent full-bleed status treatment. -->
+    <meta id="browser-theme-color" content="#3d245d">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
@@ -46,9 +48,18 @@
             const chromeColor = shaderPreset === 3
                 ? shaderBackground
                 : blend(shaderBackground, shaderTint);
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+                (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+            const themeMeta = document.getElementById('browser-theme-color');
+            if (isIOS) {
+                document.documentElement.classList.add('ios-full-bleed');
+                themeMeta?.removeAttribute('name');
+            } else {
+                themeMeta?.setAttribute('name', 'theme-color');
+            }
             document.documentElement.style.setProperty('--browser-chrome-color', chromeColor);
             document.documentElement.style.backgroundColor = chromeColor;
-            document.getElementById('browser-theme-color')?.setAttribute('content', chromeColor);
+            themeMeta?.setAttribute('content', chromeColor);
         })();
     </script>
 
@@ -147,16 +158,16 @@
             width: 100%;
         }
 
-        /* Decorative surfaces use the largest mobile viewport so retracting or
-           expanding browser toolbars never reveals an unpainted strip. */
+        /* Overscan the animated surface beyond both viewport edges. This gives
+           translucent mobile browser chrome real shader pixels to reveal. */
         #shader-bg {
             position: fixed;
-            top: 0;
+            top: -120px;
             left: 0;
             width: 100vw;
-            height: 100vh;
-            height: 100lvh;
-            background-color: var(--browser-chrome-color);
+            height: calc(100vh + 240px);
+            height: calc(100lvh + 240px);
+            background-color: transparent;
             z-index: 0;
             pointer-events: none;
         }
