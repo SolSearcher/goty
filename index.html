@@ -8,6 +8,7 @@
     <!-- Lock Dark Reader and Declare Native Dark Color Scheme -->
     <meta name="darkreader-lock">
     <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#2a0845">
 
     <title>Game Awards 2026</title>
 
@@ -77,19 +78,35 @@
         ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
+        html {
+            min-height: 100%;
+            background-color: #2a0845;
+        }
+
         body {
             margin: 0;
             padding: 40px 20px;
             display: flex;
             justify-content: center;
-            background-color: #000; 
+            min-height: 100vh;
+            min-height: 100dvh;
+            background-color: #2a0845;
             overflow-x: hidden;
+            background-repeat: no-repeat;
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            box-sizing: border-box;
         }
 
+        /* Four-edge bounds and dynamic viewport height prevent iOS Safari safe-area gaps. */
         #shader-bg {
             position: fixed;
-            top: 0; left: 0;
-            width: 100vw; height: 100vh;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+            min-height: 100%;
             z-index: -1;
             pointer-events: none;
         }
@@ -397,12 +414,21 @@
 
         /* MOBILE RESPONSIVE RULES */
         @media (max-width: 768px) {
-            body { padding: 15px 8px; }
+            body {
+                padding-top: calc(12px + env(safe-area-inset-top));
+                padding-right: max(8px, env(safe-area-inset-right));
+                padding-bottom: calc(12px + env(safe-area-inset-bottom));
+                padding-left: max(8px, env(safe-area-inset-left));
+            }
             .container { padding: 18px 12px; width: 100%; border-radius: 16px; }
             .header-bubbles-row { flex-direction: column; align-items: stretch; gap: 10px; width: 100%; }
             .header-bubble { width: 100% !important; max-width: 100% !important; justify-content: center; }
             .input-section { flex-direction: column !important; width: 100%; }
             .input-section input[type="text"], .input-section button { width: 100% !important; box-sizing: border-box; }
+            .awards-controls { flex-direction: column; align-items: stretch; gap: 10px; width: 100%; }
+            .category-adder { flex-direction: column; width: 100%; gap: 8px; }
+            .category-adder input { max-width: 100% !important; width: 100%; box-sizing: border-box; }
+            .category-adder button, #view-toggle-btn { width: 100%; box-sizing: border-box; }
             .awards-section { flex-direction: row; width: 100%; }
             .sidebar { width: 95px; min-width: 95px; height: calc(100vh - 60px); position: sticky; top: 15px; }
             .sidebar.collapsed { width: 32px !important; min-width: 32px !important; }
