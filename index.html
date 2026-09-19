@@ -58,7 +58,7 @@
                 themeMeta?.setAttribute('name', 'theme-color');
             }
             document.documentElement.style.setProperty('--browser-chrome-color', chromeColor);
-            document.documentElement.style.backgroundColor = chromeColor;
+            document.documentElement.style.backgroundColor = isIOS ? 'transparent' : chromeColor;
             themeMeta?.setAttribute('content', chromeColor);
         })();
     </script>
@@ -170,6 +170,21 @@
             background-color: transparent;
             z-index: 0;
             pointer-events: none;
+        }
+
+        /* Safari 26 applies a flat edge tint when a fixed/sticky element meets
+           browser chrome. On iOS, use an absolute composited canvas and move it
+           with scroll in JS so the web layer stays visually fixed without
+           activating that tint heuristic. */
+        html.ios-full-bleed,
+        html.ios-full-bleed body {
+            background-color: transparent !important;
+        }
+        html.ios-full-bleed #shader-bg {
+            position: absolute;
+            background-color: var(--browser-chrome-color);
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
         }
 
         .container {
@@ -840,8 +855,13 @@
         const themeMeta = document.getElementById('browser-theme-color');
         if (themeMeta) themeMeta.setAttribute('content', color);
         document.documentElement.style.setProperty('--browser-chrome-color', color);
-        document.documentElement.style.backgroundColor = color;
-        document.body.style.backgroundColor = color;
+        if (document.documentElement.classList.contains('ios-full-bleed')) {
+            document.documentElement.style.removeProperty('background-color');
+            document.body.style.removeProperty('background-color');
+        } else {
+            document.documentElement.style.backgroundColor = color;
+            document.body.style.backgroundColor = color;
+        }
     }
 
     function toggleThemePopdown() {
@@ -1038,7 +1058,18 @@
             gl.uniform1i(presetLocation, activeShaderPreset); gl.uniform3f(tintLocation, activeShaderTintRgb[0], activeShaderTintRgb[1], activeShaderTintRgb[2]); gl.uniform3f(bgColorLocation, activeShaderBgRgb[0], activeShaderBgRgb[1], activeShaderBgRgb[2]);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
+        let lastIOSShaderOffset = null;
+        function syncIOSShaderPosition() {
+            if (!document.documentElement.classList.contains('ios-full-bleed')) return;
+            const visualOffset = window.visualViewport ? window.visualViewport.offsetTop : 0;
+            const nextOffset = Math.round(window.scrollY + visualOffset);
+            if (nextOffset !== lastIOSShaderOffset) {
+                canvas.style.transform = `translate3d(0, ${nextOffset}px, 0)`;
+                lastIOSShaderOffset = nextOffset;
+            }
+        }
         function render(time) {
+            syncIOSShaderPosition();
             drawShaderFrame(time);
             requestAnimationFrame(render);
         }
