@@ -2,13 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     
     <!-- Lock Dark Reader and Declare Native Dark Color Scheme -->
     <meta name="darkreader-lock">
     <meta name="color-scheme" content="dark">
-    <meta id="browser-theme-color" name="theme-color" content="#2a0845">
+    <meta id="browser-theme-color" name="theme-color" content="#3d245d">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Apply the saved chrome/overscroll color before the first paint. Mobile
+         browsers can snapshot theme-color before the main app initializes. -->
+    <script>
+        (() => {
+            const normalizeHex = (hex, fallback) => {
+                let value = String(hex || '').replace('#', '');
+                if (value.length === 3) value = value.split('').map(char => char + char).join('');
+                return /^[0-9a-fA-F]{6}$/.test(value) ? `#${value.toLowerCase()}` : fallback;
+            };
+            const blend = (baseHex, tintHex, weight = 0.35) => {
+                const base = normalizeHex(baseHex, '#0b0c16').slice(1);
+                const tint = normalizeHex(tintHex, '#9b51e0').slice(1);
+                const channel = (offset) => Math.round(
+                    parseInt(base.slice(offset, offset + 2), 16) * (1 - weight) +
+                    parseInt(tint.slice(offset, offset + 2), 16) * weight
+                ).toString(16).padStart(2, '0');
+                return `#${channel(0)}${channel(2)}${channel(4)}`;
+            };
+
+            let shaderPreset = 0;
+            let shaderTint = '#9b51e0';
+            let shaderBackground = '#0b0c16';
+            try {
+                const saved = JSON.parse(localStorage.getItem('goty_app_data') || 'null');
+                if (saved) {
+                    shaderPreset = Number(saved.shaderPreset ?? 0);
+                    shaderTint = normalizeHex(saved.shaderTintHex, shaderTint);
+                    shaderBackground = normalizeHex(saved.shaderBgHex, shaderBackground);
+                }
+            } catch (_) { /* Defaults prevent storage/privacy errors from affecting startup. */ }
+
+            const chromeColor = shaderPreset === 3
+                ? shaderBackground
+                : blend(shaderBackground, shaderTint);
+            document.documentElement.style.setProperty('--browser-chrome-color', chromeColor);
+            document.documentElement.style.backgroundColor = chromeColor;
+            document.getElementById('browser-theme-color')?.setAttribute('content', chromeColor);
+        })();
+    </script>
 
     <title>Game Awards 2026</title>
 
@@ -32,6 +74,7 @@
 
         :root {
             color-scheme: dark;
+            --browser-chrome-color: #3d245d;
             --text-color: #f0f0f0;
             --accent: #bb86fc;
             --accent-glow: rgba(187, 134, 252, 0.4);
@@ -81,7 +124,8 @@
         html {
             min-height: 100%;
             width: 100%;
-            background-color: #2a0845;
+            background-color: var(--browser-chrome-color);
+            overscroll-behavior: none;
         }
 
         body {
@@ -91,8 +135,10 @@
             justify-content: center;
             min-height: 100vh;
             min-height: 100dvh;
-            background-color: #2a0845;
+            background-color: var(--browser-chrome-color);
             overflow-x: hidden;
+            overscroll-behavior-x: none;
+            overscroll-behavior-y: none;
             background-repeat: no-repeat;
             background-size: cover;
             background-position: center;
@@ -101,15 +147,16 @@
             width: 100%;
         }
 
-        /* Fill the physical display; safe-area padding below keeps UI clear of iPhone chrome. */
+        /* Decorative surfaces use the largest mobile viewport so retracting or
+           expanding browser toolbars never reveals an unpainted strip. */
         #shader-bg {
             position: fixed;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            min-width: 100vw;
-            min-height: 100vh;
-            min-height: 100dvh;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            height: 100lvh;
+            background-color: var(--browser-chrome-color);
             z-index: 0;
             pointer-events: none;
         }
@@ -678,6 +725,7 @@
             : blendHexColors(activeShaderBgHex, activeShaderTintHex);
         const themeMeta = document.getElementById('browser-theme-color');
         if (themeMeta) themeMeta.setAttribute('content', color);
+        document.documentElement.style.setProperty('--browser-chrome-color', color);
         document.documentElement.style.backgroundColor = color;
         document.body.style.backgroundColor = color;
     }
@@ -768,14 +816,19 @@
     const gl = canvas.getContext('webgl');
     if (gl) {
         function resizeCanvas() {
-            const visualHeight = window.visualViewport
-                ? Math.ceil(window.visualViewport.height + window.visualViewport.offsetTop)
-                : 0;
-            canvas.width = window.innerWidth;
-            canvas.height = Math.max(window.innerHeight, visualHeight);
-            gl.viewport(0, 0, canvas.width, canvas.height);
+            const bounds = canvas.getBoundingClientRect();
+            const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+            const displayWidth = Math.max(1, Math.round(bounds.width * pixelRatio));
+            const displayHeight = Math.max(1, Math.round(bounds.height * pixelRatio));
+            if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+                canvas.width = displayWidth;
+                canvas.height = displayHeight;
+                gl.viewport(0, 0, displayWidth, displayHeight);
+            }
         }
         window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('orientationchange', resizeCanvas);
+        window.addEventListener('pageshow', resizeCanvas);
         if (window.visualViewport) window.visualViewport.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
