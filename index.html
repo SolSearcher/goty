@@ -92,6 +92,10 @@
             --border: rgba(255, 255, 255, 0.12);
             --bg-glass: rgba(15, 15, 22, 0.28);
             --element-glass: rgba(0, 0, 0, 0.22);
+            --safe-top-stable: env(safe-area-max-inset-top, env(safe-area-inset-top, 0px));
+            --safe-right-stable: env(safe-area-max-inset-right, env(safe-area-inset-right, 0px));
+            --safe-bottom-stable: env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px));
+            --safe-left-stable: env(safe-area-max-inset-left, env(safe-area-inset-left, 0px));
             
             /* Dynamic Theme Variables */
             --header-font: 'Righteous', cursive;
@@ -162,29 +166,27 @@
            translucent mobile browser chrome real shader pixels to reveal. */
         #shader-bg {
             position: fixed;
-            top: -120px;
+            top: -80px;
             left: 0;
             width: 100vw;
-            height: calc(100vh + 240px);
-            height: calc(100lvh + 240px);
+            height: calc(100vh + 160px);
+            height: calc(100lvh + 160px);
             background-color: transparent;
             z-index: 0;
             pointer-events: none;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
         }
 
-        /* Safari 26 applies a flat edge tint when a fixed/sticky element meets
-           browser chrome. On iOS, use an absolute composited canvas and move it
-           with scroll in JS so the web layer stays visually fixed without
-           activating that tint heuristic. */
+        /* Keep iOS browser chrome translucent, but leave positioning entirely
+           to the compositor. JavaScript scroll-following causes visible jumps. */
         html.ios-full-bleed,
         html.ios-full-bleed body {
             background-color: transparent !important;
         }
         html.ios-full-bleed #shader-bg {
-            position: absolute;
-            background-color: var(--browser-chrome-color);
-            will-change: transform;
-            transform: translate3d(0, 0, 0);
+            position: fixed;
+            background-color: transparent;
         }
 
         .container {
@@ -492,12 +494,13 @@
         /* MOBILE RESPONSIVE RULES */
         @media (max-width: 768px) {
             body {
-                padding-top: calc(12px + env(safe-area-inset-top));
-                padding-right: max(8px, env(safe-area-inset-right));
-                padding-bottom: calc(12px + env(safe-area-inset-bottom));
-                padding-left: max(8px, env(safe-area-inset-left));
+                padding-top: calc(12px + var(--safe-top-stable));
+                padding-right: max(8px, var(--safe-right-stable));
+                padding-bottom: calc(12px + var(--safe-bottom-stable));
+                padding-left: max(8px, var(--safe-left-stable));
+                background-attachment: scroll;
             }
-            .container { padding: 18px 12px; width: 100%; border-radius: 16px; }
+            .container { padding: 18px 12px; width: 100%; border-radius: 16px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
             .header-bubbles-row { flex-direction: column; align-items: stretch; gap: 10px; width: 100%; }
             .header-bubble { width: 100% !important; max-width: 100% !important; justify-content: center; }
             .input-section { flex-direction: column !important; width: 100%; }
@@ -507,12 +510,12 @@
             .category-adder input { max-width: 100% !important; width: 100%; box-sizing: border-box; }
             .category-adder button, #view-toggle-btn { width: 100%; box-sizing: border-box; }
             .awards-section { flex-direction: row; width: 100%; gap: 12px; min-width: 0; }
-            .sidebar { width: 88px; min-width: 88px; height: calc(100vh - 60px); height: calc(100dvh - 60px); position: sticky; top: calc(15px + env(safe-area-inset-top)); padding-left: 8px; padding-right: 8px; }
+            .sidebar { width: 88px; min-width: 88px; height: calc(100vh - 60px); height: calc(100dvh - 60px); position: sticky; top: calc(15px + var(--safe-top-stable)); padding-left: 8px; padding-right: 8px; }
             .sidebar.collapsed { width: 32px !important; min-width: 32px !important; }
             .draggable-icon { max-height: 85px !important; max-width: 100% !important; }
             .awards-content { flex: 1 1 0; min-width: 0; width: auto; }
             .category-grid { grid-template-columns: 1fr !important; width: 100%; }
-            .category-slot { padding: 15px; min-height: 160px; width: 100%; min-width: 0; overflow: visible; }
+            .category-slot { padding: 15px; min-height: 160px; width: 100%; min-width: 0; overflow: visible; backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(10, 8, 18, 0.38); }
             .dropped-icons-container { min-width: 0; max-width: 100%; }
             .dropped-game-wrapper { max-width: 100%; min-width: 0; }
             .dropped-icon { width: auto; height: auto; max-width: 100%; max-height: 130px; }
@@ -826,6 +829,26 @@
 
     const defaultCategories = ["Best Music", "Best Story", "Best Visuals", "Biggest Surprise", "Most Fun Gameplay"];
 
+    function freezeStableSafeAreas() {
+        const probe = document.createElement('div');
+        probe.setAttribute('aria-hidden', 'true');
+        probe.style.cssText = `position:fixed;visibility:hidden;pointer-events:none;
+            padding-top:env(safe-area-max-inset-top, env(safe-area-inset-top, 0px));
+            padding-right:env(safe-area-max-inset-right, env(safe-area-inset-right, 0px));
+            padding-bottom:env(safe-area-max-inset-bottom, env(safe-area-inset-bottom, 0px));
+            padding-left:env(safe-area-max-inset-left, env(safe-area-inset-left, 0px));`;
+        document.body.appendChild(probe);
+        const computed = getComputedStyle(probe);
+        const rootStyle = document.documentElement.style;
+        rootStyle.setProperty('--safe-top-stable', computed.paddingTop || '0px');
+        rootStyle.setProperty('--safe-right-stable', computed.paddingRight || '0px');
+        rootStyle.setProperty('--safe-bottom-stable', computed.paddingBottom || '0px');
+        rootStyle.setProperty('--safe-left-stable', computed.paddingLeft || '0px');
+        probe.remove();
+    }
+    freezeStableSafeAreas();
+    window.addEventListener('orientationchange', () => setTimeout(freezeStableSafeAreas, 250));
+
     function hexToRgbNormalized(hex) {
         let c = hex.replace('#', '');
         if (c.length === 3) c = c.split('').map(x => x + x).join('');
@@ -949,9 +972,10 @@
     const canvas = document.getElementById('shader-bg');
     const gl = canvas.getContext('webgl');
     if (gl) {
+        const mobileShaderMode = window.matchMedia('(pointer: coarse)').matches && window.innerWidth <= 900;
         function resizeCanvas() {
             const bounds = canvas.getBoundingClientRect();
-            const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+            const pixelRatio = Math.min(window.devicePixelRatio || 1, mobileShaderMode ? 1.25 : 2);
             const displayWidth = Math.max(1, Math.round(bounds.width * pixelRatio));
             const displayHeight = Math.max(1, Math.round(bounds.height * pixelRatio));
             if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
@@ -960,10 +984,12 @@
                 gl.viewport(0, 0, displayWidth, displayHeight);
             }
         }
-        window.addEventListener('resize', resizeCanvas);
         window.addEventListener('orientationchange', resizeCanvas);
         window.addEventListener('pageshow', resizeCanvas);
-        if (window.visualViewport) window.visualViewport.addEventListener('resize', resizeCanvas);
+        if ('ResizeObserver' in window) {
+            const shaderResizeObserver = new ResizeObserver(resizeCanvas);
+            shaderResizeObserver.observe(canvas);
+        }
         resizeCanvas();
 
         const vsSource = `attribute vec4 aVertexPosition; void main() { gl_Position = aVertexPosition; }`;
@@ -1058,19 +1084,13 @@
             gl.uniform1i(presetLocation, activeShaderPreset); gl.uniform3f(tintLocation, activeShaderTintRgb[0], activeShaderTintRgb[1], activeShaderTintRgb[2]); gl.uniform3f(bgColorLocation, activeShaderBgRgb[0], activeShaderBgRgb[1], activeShaderBgRgb[2]);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
-        let lastIOSShaderOffset = null;
-        function syncIOSShaderPosition() {
-            if (!document.documentElement.classList.contains('ios-full-bleed')) return;
-            const visualOffset = window.visualViewport ? window.visualViewport.offsetTop : 0;
-            const nextOffset = Math.round(window.scrollY + visualOffset);
-            if (nextOffset !== lastIOSShaderOffset) {
-                canvas.style.transform = `translate3d(0, ${nextOffset}px, 0)`;
-                lastIOSShaderOffset = nextOffset;
-            }
-        }
+        const shaderFrameInterval = mobileShaderMode ? (1000 / 30) : 0;
+        let lastShaderFrame = -Infinity;
         function render(time) {
-            syncIOSShaderPosition();
-            drawShaderFrame(time);
+            if (!shaderFrameInterval || time - lastShaderFrame >= shaderFrameInterval) {
+                drawShaderFrame(time);
+                lastShaderFrame = time;
+            }
             requestAnimationFrame(render);
         }
         window.captureShaderBackground = () => {
