@@ -512,6 +512,96 @@
         body.shared-view .input-section, body.shared-view .theme-bubble-btn, body.shared-view .sidebar { display: none !important; }
         body.export-mode .sidebar, body.export-mode .game-info-btn, body.export-mode .remove-game-btn { display: none !important; }
         body.shared-view .phase-2-container, body.export-mode .phase-2-container { display: block !important; opacity: 1 !important; }
+
+        /* Dedicated off-screen export composition. It is deliberately wider
+           than a phone screen so the saved image reads like a designed poster. */
+        .export-render-root {
+            position: fixed; left: -100000px; top: 0; width: 1080px; padding: 48px;
+            background-color: var(--browser-chrome-color); background-position: center;
+            background-repeat: no-repeat; background-size: cover; pointer-events: none;
+            z-index: -100; box-sizing: border-box;
+        }
+        .export-render-root .container {
+            width: 100%; max-width: none; padding: 48px; border-radius: 32px;
+            background: rgba(15, 15, 22, 0.56); box-shadow: 0 24px 70px rgba(0,0,0,0.62), inset 0 0 0 1px var(--border);
+        }
+        .export-render-root .theme-popdown-panel,
+        .export-render-root .theme-bubble-btn,
+        .export-render-root .input-section-label,
+        .export-render-root .input-section,
+        .export-render-root .helper-text,
+        .export-render-root .proceed-phase-wrapper,
+        .export-render-root .awards-controls,
+        .export-render-root .sidebar,
+        .export-render-root .export-section,
+        .export-render-root .game-item-actions,
+        .export-render-root .game-note-drawer,
+        .export-render-root .remove-game-btn,
+        .export-render-root .game-info-btn,
+        .export-render-root .delete-category-btn,
+        .export-render-root hr { display: none !important; }
+        .export-render-root .name-input-bubble { display: none !important; }
+        .export-render-root .name-display-text { display: inline !important; text-align: center; }
+        .export-render-root .header-bubbles-row { justify-content: center; }
+        .export-render-root .name-bubble { flex: 0 1 620px; max-width: 620px; justify-content: center; }
+        .export-render-root .phase-2-container { display: block !important; opacity: 1 !important; }
+        .export-render-root .list-section {
+            display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;
+            max-height: none; overflow: visible; padding: 18px; margin-bottom: 44px;
+        }
+        .export-render-root .game-item {
+            justify-content: center; padding: 14px 10px; margin: 0; min-width: 0;
+            background: rgba(0,0,0,0.18); border: 1px solid var(--border);
+        }
+        .export-render-root .game-info { flex-direction: column; min-width: 0; gap: 10px; text-align: center; }
+        .export-render-root .game-icon-wrapper { width: 118px; cursor: default; }
+        .export-render-root .game-icon-wrapper::after { display: none !important; }
+        .export-render-root .awards-section { display: block; width: 100%; }
+        .export-render-root .awards-content { width: 100%; min-width: 0; gap: 48px; }
+        .export-render-root .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 24px; }
+        .export-render-root .category-slot { padding: 22px; min-height: 260px; overflow: hidden; }
+        .export-render-root .dropped-icons-container { justify-content: center; }
+        .export-render-root .goty-section { padding: 34px; }
+        .export-render-root .goty-title { font-size: 42px; }
+        .export-render-root .goty-container { flex-direction: row; gap: 36px; }
+        .export-render-root .goty-drop-slot { width: 320px !important; max-width: 320px; flex: 0 0 320px; }
+        .export-render-root .goty-drop-slot.has-game { width: 320px !important; }
+        .export-render-root .goty-blurb-wrapper { min-width: 0; max-width: none; width: auto; flex: 1; }
+        .goty-export-blurb {
+            min-height: 180px; padding: 24px; border-radius: 18px; background: rgba(0,0,0,0.38);
+            border: 1px solid rgba(255,255,255,0.12); color: var(--text-color); font-size: 20px;
+            line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere;
+        }
+
+        .image-export-modal {
+            display: none; position: fixed; inset: 0; z-index: 5000; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+            background: rgba(5, 5, 10, 0.9); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+            align-items: center; justify-content: center; box-sizing: border-box;
+        }
+        .image-export-modal.open { display: flex; }
+        .image-export-card {
+            width: min(960px, 100%); max-height: 100%; overflow: auto; padding: 20px;
+            border-radius: 24px; border: 1px solid var(--border); background: rgba(22,22,30,0.97);
+            box-shadow: 0 24px 70px rgba(0,0,0,0.72); box-sizing: border-box;
+        }
+        .image-export-heading { margin: 0 0 6px; text-align: center; color: var(--accent); font-size: 25px; }
+        .image-export-help { margin: 0 0 16px; text-align: center; color: #bbb; font-size: 14px; line-height: 1.45; }
+        .image-export-preview {
+            display: block; width: 100%; height: auto; max-height: 64vh; object-fit: contain;
+            background: #090a12; border-radius: 14px; border: 1px solid var(--border);
+        }
+        .image-export-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 16px; }
+        .image-export-actions button, .image-export-actions a {
+            display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 12px 22px;
+            border: 0; border-radius: 999px; background: var(--accent); color: #09070d; font: 800 14px var(--body-font);
+            text-transform: uppercase; text-decoration: none; box-sizing: border-box;
+        }
+        .image-export-actions .secondary { background: rgba(255,255,255,0.09); color: var(--text-color); border: 1px solid var(--border); }
+        @media (max-width: 600px) {
+            .image-export-card { padding: 14px; border-radius: 18px; }
+            .image-export-preview { max-height: 58vh; }
+            .image-export-actions > * { width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -653,13 +743,26 @@
         </section>
 
         <section class="export-section">
-            <button class="export-btn png-btn" onclick="exportPNG()">📸 Save Image</button>
+            <button class="export-btn png-btn" onclick="exportPNG()">📸 Preview / Save Image</button>
             <button class="export-btn" onclick="copyShareableLink()">🔗 Copy Share Link</button>
         </section>
     </div>
 </div>
 
 <div id="toast">Link copied to clipboard!</div>
+
+<div id="image-export-modal" class="image-export-modal" role="dialog" aria-modal="true" aria-labelledby="image-export-heading" onclick="if(event.target === this) closeImageExportPreview()">
+    <div class="image-export-card">
+        <h2 id="image-export-heading" class="image-export-heading">Your Game Awards Image</h2>
+        <p class="image-export-help">On iPhone, tap <strong>Save / Share Image</strong> and choose <strong>Save Image</strong> from the share sheet.</p>
+        <img id="image-export-preview" class="image-export-preview" alt="Preview of your exported Game Awards image">
+        <div class="image-export-actions">
+            <button id="native-share-image-btn" onclick="shareExportedImage()">Save / Share Image</button>
+            <button class="secondary" onclick="downloadExportedImage()">Download PNG</button>
+            <button class="secondary" onclick="closeImageExportPreview()">Close</button>
+        </div>
+    </div>
+</div>
 
 <!-- MODALS -->
 <div id="icon-modal" class="modal">
@@ -919,11 +1022,19 @@
         const positionLocation = gl.getAttribLocation(shaderProgram, "aVertexPosition"); gl.enableVertexAttribArray(positionLocation); gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
         const timeLocation = gl.getUniformLocation(shaderProgram, "u_time"), resLocation = gl.getUniformLocation(shaderProgram, "u_resolution");
         const presetLocation = gl.getUniformLocation(shaderProgram, "u_preset"), tintLocation = gl.getUniformLocation(shaderProgram, "u_tint"), bgColorLocation = gl.getUniformLocation(shaderProgram, "u_bgColor");
-        function render(time) { 
+        function drawShaderFrame(time) {
             gl.uniform1f(timeLocation, time * 0.001); gl.uniform2f(resLocation, canvas.width, canvas.height); 
             gl.uniform1i(presetLocation, activeShaderPreset); gl.uniform3f(tintLocation, activeShaderTintRgb[0], activeShaderTintRgb[1], activeShaderTintRgb[2]); gl.uniform3f(bgColorLocation, activeShaderBgRgb[0], activeShaderBgRgb[1], activeShaderBgRgb[2]);
-            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); requestAnimationFrame(render); 
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
+        function render(time) {
+            drawShaderFrame(time);
+            requestAnimationFrame(render);
+        }
+        window.captureShaderBackground = () => {
+            drawShaderFrame(performance.now());
+            return canvas.toDataURL('image/png');
+        };
         requestAnimationFrame(render);
     } else { document.body.style.background = "linear-gradient(135deg, #2a0845, #6441A5)"; }
 
@@ -1028,15 +1139,173 @@
         navigator.clipboard.writeText(shareUrl).then(() => showToast("🔗 Compact link copied!")).catch(() => prompt("Copy this URL:", shareUrl));
     }
 
-    async function exportPNG() {
-        showToast("📸 Generating image..."); const container = document.querySelector('.container');
-        document.getElementById("name-display").innerText = document.getElementById("user-name-input").value.trim() || "Anonymous";
-        document.body.classList.add('export-mode');
-        await new Promise(resolve => setTimeout(resolve, 100));
+    let exportedImageBlob = null;
+    let exportedImageUrl = '';
+    let exportedImageFilename = 'My_2026_Game_Awards.png';
+    let exportPreviewPreviousOverflow = '';
+
+    function getExportFilename() {
+        const rawName = document.getElementById("user-name-input").value.trim() || "My";
+        const safeName = rawName.replace(/[^a-z0-9_-]+/gi, '_').replace(/^_+|_+$/g, '') || 'My';
+        return `${safeName}_2026_Game_Awards.png`;
+    }
+
+    function buildExportComposition() {
+        const source = document.querySelector('.container');
+        const stage = document.createElement('div');
+        stage.className = 'export-render-root';
+
+        const clone = source.cloneNode(true);
+        stage.appendChild(clone);
+
+        const sourceFields = source.querySelectorAll('input, textarea');
+        const clonedFields = clone.querySelectorAll('input, textarea');
+        sourceFields.forEach((field, index) => {
+            if (clonedFields[index]) clonedFields[index].value = field.value;
+        });
+
+        const displayName = clone.querySelector('#name-display');
+        if (displayName) displayName.textContent = document.getElementById('user-name-input').value.trim() || 'Anonymous';
+
+        clone.querySelectorAll('.category-slot').forEach(slot => {
+            if (!slot.querySelector('.dropped-game-wrapper')) slot.remove();
+        });
+
+        const originalBlurb = document.getElementById('goty-blurb-input').value.trim();
+        const clonedBlurb = clone.querySelector('#goty-blurb-input');
+        if (clonedBlurb && originalBlurb) {
+            const blurbDisplay = document.createElement('div');
+            blurbDisplay.className = 'goty-export-blurb';
+            blurbDisplay.textContent = originalBlurb;
+            clonedBlurb.replaceWith(blurbDisplay);
+        } else if (clonedBlurb) {
+            clonedBlurb.closest('.goty-blurb-wrapper')?.remove();
+        }
+
+        const gotySection = clone.querySelector('#goty-section');
+        if (gotySection && !gotySection.querySelector('.goty-icon-display') && !originalBlurb) gotySection.remove();
+
+        const gameList = clone.querySelector('#game-list-container');
+        if (gameList && !gameList.querySelector('.game-item')) {
+            gameList.previousElementSibling?.remove();
+            gameList.remove();
+        }
+
         try {
-            const canvas = await html2canvas(container, { backgroundColor: '#0a0a0f', useCORS: true, scale: 2, logging: false });
-            const a = document.createElement("a"); a.href = canvas.toDataURL("image/png"); a.download = `${(document.getElementById("user-name-input").value.trim() || "My").replace(/\s+/g, '_')}_2026_Game_List.png`; a.click(); showToast("✅ Image saved!");
-        } catch(err) { alert("Could not generate image. Some external images may be blocking export."); } finally { document.body.classList.remove('export-mode'); }
+            if (activeShaderPreset === 3 && activeCustomBgUrl) {
+                stage.style.backgroundImage = `linear-gradient(rgba(11,12,22,0.22), rgba(11,12,22,0.38)), url("${activeCustomBgUrl}")`;
+            } else if (typeof window.captureShaderBackground === 'function') {
+                stage.style.backgroundImage = `url("${window.captureShaderBackground()}")`;
+            }
+        } catch (_) {
+            stage.style.backgroundImage = `radial-gradient(circle at 22% 18%, ${activeShaderTintHex}99, transparent 44%), linear-gradient(145deg, ${activeShaderBgHex}, ${blendHexColors(activeShaderBgHex, activeShaderTintHex)})`;
+        }
+
+        document.body.appendChild(stage);
+        return stage;
+    }
+
+    async function waitForExportAssets(stage) {
+        if (document.fonts?.ready) {
+            try { await document.fonts.ready; } catch (_) {}
+        }
+        const images = Array.from(stage.querySelectorAll('img'));
+        await Promise.all(images.map(img => {
+            if (img.complete) return Promise.resolve();
+            return new Promise(resolve => {
+                const done = () => resolve();
+                img.addEventListener('load', done, { once: true });
+                img.addEventListener('error', done, { once: true });
+                setTimeout(done, 8000);
+            });
+        }));
+    }
+
+    function openImageExportPreview() {
+        const modal = document.getElementById('image-export-modal');
+        const preview = document.getElementById('image-export-preview');
+        preview.src = exportedImageUrl;
+        exportPreviewPreviousOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        modal.classList.add('open');
+        const shareButton = document.getElementById('native-share-image-btn');
+        const file = new File([exportedImageBlob], exportedImageFilename, { type: 'image/png' });
+        let canShareFile = false;
+        try { canShareFile = !!navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] })); } catch (_) {}
+        shareButton.style.display = canShareFile ? 'inline-flex' : 'none';
+    }
+
+    function closeImageExportPreview() {
+        document.getElementById('image-export-modal').classList.remove('open');
+        document.body.style.overflow = exportPreviewPreviousOverflow;
+    }
+
+    async function shareExportedImage() {
+        if (!exportedImageBlob) return;
+        const file = new File([exportedImageBlob], exportedImageFilename, { type: 'image/png' });
+        try {
+            if (navigator.share && (!navigator.canShare || navigator.canShare({ files: [file] }))) {
+                await navigator.share({ files: [file], title: 'My 2026 Game Awards' });
+            } else {
+                downloadExportedImage();
+            }
+        } catch (error) {
+            if (error?.name !== 'AbortError') showToast('Could not open the share sheet. Try Download PNG instead.');
+        }
+    }
+
+    function downloadExportedImage() {
+        if (!exportedImageUrl) return;
+        const link = document.createElement('a');
+        link.href = exportedImageUrl;
+        link.download = exportedImageFilename;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    }
+
+    async function exportPNG() {
+        showToast("📸 Building your clean image preview...");
+        let stage = null;
+        try {
+            stage = buildExportComposition();
+            await waitForExportAssets(stage);
+
+            const width = stage.scrollWidth;
+            const height = stage.scrollHeight;
+            const isMobileBrowser = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+            const maxPixels = isMobileBrowser ? 8000000 : 20000000;
+            const maxScale = isMobileBrowser ? 1.5 : 2;
+            const renderScale = Math.max(0.75, Math.min(maxScale, Math.sqrt(maxPixels / Math.max(1, width * height))));
+
+            const renderedCanvas = await html2canvas(stage, {
+                backgroundColor: activeShaderBgHex,
+                useCORS: true,
+                allowTaint: false,
+                scale: renderScale,
+                width,
+                height,
+                windowWidth: 1080,
+                windowHeight: height,
+                imageTimeout: 15000,
+                logging: false
+            });
+
+            const blob = await new Promise(resolve => renderedCanvas.toBlob(resolve, 'image/png'));
+            if (!blob) throw new Error('The browser could not create the PNG file.');
+
+            if (exportedImageUrl) URL.revokeObjectURL(exportedImageUrl);
+            exportedImageBlob = blob;
+            exportedImageFilename = getExportFilename();
+            exportedImageUrl = URL.createObjectURL(blob);
+            openImageExportPreview();
+            showToast("✅ Image ready!");
+        } catch (error) {
+            console.error('Image export failed:', error);
+            alert("Could not generate the image. One of the game artwork servers may be blocking export; try swapping that game's artwork and retrying.");
+        } finally {
+            stage?.remove();
+        }
     }
 
     function toggleView() {
