@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=auto">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     
     <!-- Lock Dark Reader and Declare Native Dark Color Scheme -->
     <meta name="darkreader-lock">
     <meta name="color-scheme" content="dark">
-    <meta name="theme-color" content="#2a0845">
+    <meta id="browser-theme-color" name="theme-color" content="#2a0845">
 
     <title>Game Awards 2026</title>
 
@@ -99,7 +99,7 @@
             box-sizing: border-box;
         }
 
-        /* Four-edge bounds and dynamic viewport height prevent iOS Safari safe-area gaps. */
+        /* Cover the webpage viewport; Safari paints its own chrome using theme-color. */
         #shader-bg {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -109,35 +109,6 @@
             min-height: 100%;
             z-index: 0;
             pointer-events: none;
-        }
-
-        /* On iPhone, keep the animated shader visible beneath Safari's chrome
-           while softly masking scrolling cards and text in the unsafe areas. */
-        @media (max-width: 768px) and (hover: none) {
-            body::before, body::after {
-                content: "";
-                position: fixed;
-                left: 0;
-                right: 0;
-                z-index: 1000;
-                pointer-events: none;
-                -webkit-backdrop-filter: blur(14px) saturate(1.15);
-                backdrop-filter: blur(14px) saturate(1.15);
-            }
-
-            body::before {
-                top: 0;
-                height: max(env(safe-area-inset-top), 48px);
-                background: linear-gradient(to bottom, rgba(11, 12, 22, 0.42), rgba(11, 12, 22, 0.12) 75%, transparent);
-            }
-
-            body::after {
-                bottom: 0;
-                height: calc(env(safe-area-inset-bottom) + 58px);
-                background: linear-gradient(to top, rgba(11, 12, 22, 0.42), rgba(11, 12, 22, 0.12) 75%, transparent);
-            }
-
-            body.export-mode::before, body.export-mode::after { display: none; }
         }
 
         .container {
@@ -672,6 +643,31 @@
         return [(num >> 16 & 255) / 255.0, (num >> 8 & 255) / 255.0, (num & 255) / 255.0];
     }
 
+    function blendHexColors(baseHex, tintHex, tintWeight = 0.35) {
+        const normalize = (hex) => {
+            let value = String(hex || '').replace('#', '');
+            if (value.length === 3) value = value.split('').map(char => char + char).join('');
+            return /^[0-9a-fA-F]{6}$/.test(value) ? value : '0b0c16';
+        };
+        const base = normalize(baseHex);
+        const tint = normalize(tintHex);
+        const channel = (offset) => Math.round(
+            parseInt(base.slice(offset, offset + 2), 16) * (1 - tintWeight) +
+            parseInt(tint.slice(offset, offset + 2), 16) * tintWeight
+        ).toString(16).padStart(2, '0');
+        return `#${channel(0)}${channel(2)}${channel(4)}`;
+    }
+
+    function syncBrowserChromeColor() {
+        const color = activeShaderPreset === 3
+            ? activeShaderBgHex
+            : blendHexColors(activeShaderBgHex, activeShaderTintHex);
+        const themeMeta = document.getElementById('browser-theme-color');
+        if (themeMeta) themeMeta.setAttribute('content', color);
+        document.documentElement.style.backgroundColor = color;
+        document.body.style.backgroundColor = color;
+    }
+
     function toggleThemePopdown() {
         const panel = document.getElementById("theme-popdown");
         if (panel) {
@@ -707,6 +703,7 @@
             if (canvas) canvas.style.display = "block";
             document.body.style.backgroundImage = "none";
         }
+        syncBrowserChromeColor();
         saveAppState();
     }
 
@@ -717,8 +714,8 @@
         saveAppState();
     }
 
-    function setCustomTint(hexVal) { activeShaderTintHex = hexVal; activeShaderTintRgb = hexToRgbNormalized(hexVal); document.getElementById("shader-color-picker").value = hexVal; saveAppState(); }
-    function setShaderBgColor(hexVal) { activeShaderBgHex = hexVal; activeShaderBgRgb = hexToRgbNormalized(hexVal); document.getElementById("shader-bg-color-picker").value = hexVal; saveAppState(); }
+    function setCustomTint(hexVal) { activeShaderTintHex = hexVal; activeShaderTintRgb = hexToRgbNormalized(hexVal); document.getElementById("shader-color-picker").value = hexVal; syncBrowserChromeColor(); saveAppState(); }
+    function setShaderBgColor(hexVal) { activeShaderBgHex = hexVal; activeShaderBgRgb = hexToRgbNormalized(hexVal); document.getElementById("shader-bg-color-picker").value = hexVal; syncBrowserChromeColor(); saveAppState(); }
     function setAccentColor(hexVal) { activeAccentHex = hexVal; document.documentElement.style.setProperty('--accent', hexVal); document.documentElement.style.setProperty('--accent-glow', hexVal + '66'); document.getElementById("accent-color-picker").value = hexVal; saveAppState(); }
     function setFontColor(hexVal) { activeFontColorHex = hexVal; document.documentElement.style.setProperty('--text-color', hexVal); document.getElementById("font-color-picker").value = hexVal; saveAppState(); }
 
