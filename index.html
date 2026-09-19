@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=auto">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     
     <!-- Lock Dark Reader and Declare Native Dark Color Scheme -->
@@ -80,6 +80,7 @@
 
         html {
             min-height: 100%;
+            width: 100%;
             background-color: #2a0845;
         }
 
@@ -97,16 +98,18 @@
             background-position: center;
             background-attachment: fixed;
             box-sizing: border-box;
+            width: 100%;
         }
 
-        /* Cover the webpage viewport; Safari paints its own chrome using theme-color. */
+        /* Fill the physical display; safe-area padding below keeps UI clear of iPhone chrome. */
         #shader-bg {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            width: 100vw;
-            height: 100vh;
-            height: 100dvh;
-            min-height: 100%;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            min-width: 100vw;
+            min-height: 100vh;
+            min-height: 100dvh;
             z-index: 0;
             pointer-events: none;
         }
@@ -430,15 +433,26 @@
             .category-adder { flex-direction: column; width: 100%; gap: 8px; }
             .category-adder input { max-width: 100% !important; width: 100%; box-sizing: border-box; }
             .category-adder button, #view-toggle-btn { width: 100%; box-sizing: border-box; }
-            .awards-section { flex-direction: row; width: 100%; }
-            .sidebar { width: 95px; min-width: 95px; height: calc(100vh - 60px); position: sticky; top: 15px; }
+            .awards-section { flex-direction: row; width: 100%; gap: 12px; min-width: 0; }
+            .sidebar { width: 88px; min-width: 88px; height: calc(100vh - 60px); height: calc(100dvh - 60px); position: sticky; top: calc(15px + env(safe-area-inset-top)); padding-left: 8px; padding-right: 8px; }
             .sidebar.collapsed { width: 32px !important; min-width: 32px !important; }
             .draggable-icon { max-height: 85px !important; max-width: 100% !important; }
+            .awards-content { flex: 1 1 0; min-width: 0; width: auto; }
             .category-grid { grid-template-columns: 1fr !important; width: 100%; }
-            .category-slot { padding: 15px; min-height: 160px; width: 100%; }
+            .category-slot { padding: 15px; min-height: 160px; width: 100%; min-width: 0; overflow: visible; }
+            .dropped-icons-container { min-width: 0; max-width: 100%; }
+            .dropped-game-wrapper { max-width: 100%; min-width: 0; }
+            .dropped-icon { width: auto; height: auto; max-width: 100%; max-height: 130px; }
+            .dropped-game-wrapper .remove-game-btn { right: 4px; top: 4px; }
             .goty-section { padding: 20px 12px; width: 100%; }
-            .goty-container { flex-direction: column; width: 100%; }
-            .goty-drop-slot { width: 100%; max-width: 100%; }
+            .goty-title { max-width: 100%; font-size: clamp(28px, 9vw, 40px); overflow-wrap: anywhere; }
+            .goty-container { flex-direction: column; width: 100%; min-width: 0; gap: 24px; }
+            .goty-drop-slot, .goty-drop-slot.has-game { width: 100% !important; max-width: 100%; min-width: 0; }
+            .goty-image-wrapper { max-width: 100%; min-width: 0; }
+            .goty-icon-display { max-width: 100%; }
+            .goty-blurb-wrapper { min-width: 0; max-width: 100%; width: 100%; }
+            .goty-textarea { min-width: 0; max-width: 100%; }
+            .goty-image-wrapper .remove-game-btn { right: 4px; top: 4px; }
             .modal-content { padding: 20px 14px; width: 95%; border-radius: 16px; }
             .icon-options-grid { grid-template-columns: repeat(auto-fill, minmax(85px, 1fr)); }
             .option-card { height: 100px; }
