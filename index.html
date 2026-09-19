@@ -107,8 +107,37 @@
             height: 100vh;
             height: 100dvh;
             min-height: 100%;
-            z-index: -1;
+            z-index: 0;
             pointer-events: none;
+        }
+
+        /* On iPhone, keep the animated shader visible beneath Safari's chrome
+           while softly masking scrolling cards and text in the unsafe areas. */
+        @media (max-width: 768px) and (hover: none) {
+            body::before, body::after {
+                content: "";
+                position: fixed;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                pointer-events: none;
+                -webkit-backdrop-filter: blur(14px) saturate(1.15);
+                backdrop-filter: blur(14px) saturate(1.15);
+            }
+
+            body::before {
+                top: 0;
+                height: max(env(safe-area-inset-top), 48px);
+                background: linear-gradient(to bottom, rgba(11, 12, 22, 0.42), rgba(11, 12, 22, 0.12) 75%, transparent);
+            }
+
+            body::after {
+                bottom: 0;
+                height: calc(env(safe-area-inset-bottom) + 58px);
+                background: linear-gradient(to top, rgba(11, 12, 22, 0.42), rgba(11, 12, 22, 0.12) 75%, transparent);
+            }
+
+            body.export-mode::before, body.export-mode::after { display: none; }
         }
 
         .container {
@@ -123,6 +152,7 @@
             transition: all 0.4s ease;
             box-sizing: border-box;
             position: relative;
+            z-index: 1;
         }
 
         header {
@@ -726,8 +756,17 @@
     const canvas = document.getElementById('shader-bg');
     const gl = canvas.getContext('webgl');
     if (gl) {
-        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; gl.viewport(0, 0, canvas.width, canvas.height); }
-        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+        function resizeCanvas() {
+            const visualHeight = window.visualViewport
+                ? Math.ceil(window.visualViewport.height + window.visualViewport.offsetTop)
+                : 0;
+            canvas.width = window.innerWidth;
+            canvas.height = Math.max(window.innerHeight, visualHeight);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+        window.addEventListener('resize', resizeCanvas);
+        if (window.visualViewport) window.visualViewport.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
         const vsSource = `attribute vec4 aVertexPosition; void main() { gl_Position = aVertexPosition; }`;
         const fsSource = `
