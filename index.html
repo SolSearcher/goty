@@ -1885,12 +1885,12 @@
                         // ----------------------------------------------------
                         
                         float r0=hash21(id+seed*1.37);
+                        if (r0 < spawnChance) continue;
+                        
                         float r1=hash21(id+seed*2.71+8.4);
                         float r2=hash21(id+seed*3.91+21.8);
                         float r3=hash21(id+seed*5.23+39.2);
                         float r4=hash21(id+seed*7.11+52.7);
-                        
-                        float enabled=step(spawnChance,r0);
                         
                         // ----------------------------------------------------
                         // Meteor geometry
@@ -1992,15 +1992,14 @@
                             progress
                         );
                         
-                        if(enabled>.5){
-                            layer+=meteorShape(
-                                vec2(q.x,y),
-                                head,
-                                streakLength,
-                                width,
-                                trailFade
-                            )*meteorFade;
-                        }
+                        if (abs(y) > width * 3.8) continue;
+                        layer+=meteorShape(
+                            vec2(q.x,y),
+                            head,
+                            streakLength,
+                            width,
+                            trailFade
+                        )*meteorFade;
                     }
                 }
                 
@@ -2075,14 +2074,12 @@
                 vec2 local=fract(grid)-.5;
                 vec3 result=vec3(0.);
                 
-                // Sample neighboring cells so a star's glow stays continuous when its
-                // center is close to a cell boundary instead of being visibly chopped.
                 for(int y=-1;y<=1;y++){
                     for(int x=-1;x<=1;x++){
                         vec2 id=baseId+vec2(float(x),float(y));
-                        vec2 offset=vec2(float(x),float(y));
-                        
                         float r0=hash21(id+seed);
+                        if (r0 <= 0.80) continue;
+                        vec2 offset=vec2(float(x),float(y));
                         float r1=hash21(id+seed+17.3);
                         float r2=hash21(id+seed+41.8);
                         
@@ -2283,13 +2280,17 @@
         const timeLocation = gl.getUniformLocation(shaderProgram, "u_time"), resLocation = gl.getUniformLocation(shaderProgram, "u_resolution");
         const presetLocation = gl.getUniformLocation(shaderProgram, "u_preset"), tintLocation = gl.getUniformLocation(shaderProgram, "u_tint"), color2Location = gl.getUniformLocation(shaderProgram, "u_color2"), bgColorLocation = gl.getUniformLocation(shaderProgram, "u_bgColor");
         function drawShaderFrame(time) {
-            gl.uniform1f(timeLocation, time * 0.001); gl.uniform2f(resLocation, canvas.width, canvas.height); 
+            gl.uniform1f(timeLocation, (time * 0.001) % 3600.0); gl.uniform2f(resLocation, canvas.width, canvas.height); 
             gl.uniform1i(presetLocation, activeShaderPreset); gl.uniform3f(tintLocation, activeShaderTintRgb[0], activeShaderTintRgb[1], activeShaderTintRgb[2]); gl.uniform3f(color2Location, activeShaderColor2Rgb[0], activeShaderColor2Rgb[1], activeShaderColor2Rgb[2]); gl.uniform3f(bgColorLocation, activeShaderBgRgb[0], activeShaderBgRgb[1], activeShaderBgRgb[2]);
             gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
         }
-        const shaderFrameInterval = mobileShaderMode ? (1000 / 30) : 0;
+        const shaderFrameInterval = mobileShaderMode ? (1000 / 60) : 0;
         let lastShaderFrame = -Infinity;
         function render(time) {
+            if (document.hidden) {
+                requestAnimationFrame(render);
+                return;
+            }
             if (!shaderFrameInterval || time - lastShaderFrame >= shaderFrameInterval) {
                 drawShaderFrame(time);
                 lastShaderFrame = time;
