@@ -1010,19 +1010,19 @@
 <script>
     const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
     let activeFontPreset = 'default';
-    let activeShaderPreset = 0;
-    let activeShaderTintHex = '#611fb8';
-    let activeShaderTintRgb = [0.380, 0.122, 0.722];
-    let activeShaderColor2Hex = '#2e0a6b';
-    let activeShaderColor2Rgb = [0.180, 0.039, 0.420];
-    let activeShaderBgHex = '#0f031f';
-    let activeShaderBgRgb = [0.059, 0.012, 0.122];
-    let activeAccentHex = '#b98aff';
+    let activeShaderPreset = 6;
+    let activeShaderTintHex = '#2ed4ff';
+    let activeShaderTintRgb = [0.180, 0.831, 1.0];
+    let activeShaderColor2Hex = '#eb33d1';
+    let activeShaderColor2Rgb = [0.922, 0.2, 0.82];
+    let activeShaderBgHex = '#06134d';
+    let activeShaderBgRgb = [0.024, 0.075, 0.302];
+    let activeAccentHex = '#dd80ff';
     let activeFontColorHex = '#f0f0f0';
     let activeCustomBgUrl = '';
 
     const SHADER_DEFAULT_PALETTES = {
-        0: { color1: '#611fb8', color2: '#2e0a6b', color3: '#0f031f', accent: '#b98aff', labels: ['Balatro Purple', 'Deep Purple', 'Ink Black'] },
+        0: { color1: '#de443b', color2: '#006bb4', color3: '#162325', accent: '#ff6b63', labels: ['Balatro Red', 'Balatro Blue', 'Deep Ink'] },
         1: { color1: '#1da8ff', color2: '#0d5ca8', color3: '#020b16', accent: '#42bdff', labels: ['Square Glow', 'Cloud Blue', 'Night Sky'] },
         3: { color1: '#9b51e0', color2: '#03dac6', color3: '#0b0c16', accent: '#bb86fc', labels: ['Image Tint', 'Overlay Accent', 'Fallback Color'] },
         4: { color1: '#f6b72d', color2: '#8e98a6', color3: '#090b0e', accent: '#ffc857', labels: ['Gold Lights', 'Metal Highlight', 'Street Void'] },
@@ -1243,7 +1243,8 @@
             uniform int u_preset; uniform vec3 u_tint; uniform vec3 u_color2; uniform vec3 u_bgColor;
 
             vec4 originalBalatroShader(vec2 screenSize, vec2 screen_coords) {
-                vec2 uv = (screen_coords.xy - 0.5 * screenSize.xy) / length(screenSize.xy);
+                float pixel_size = length(screenSize.xy) / 745.0;
+                vec2 uv = (floor(screen_coords.xy * (1.0 / pixel_size)) * pixel_size - 0.5 * screenSize.xy) / length(screenSize.xy);
                 float uv_len = length(uv);
                 float speed = (-2.0 * 1.0 * 0.2) + 302.2;
                 float new_pixel_angle = atan(uv.y, uv.x) + speed - 1.0 * 20.0 * (0.25 * uv_len + 0.75);
@@ -1354,11 +1355,7 @@
                 vec2 folded;
                 vec2 nearest = vec2(1000.0);
                 revIterPoint = vec4(point, 1.0);
-                // Reduced from 5 fractal folds to 3: this loop runs inside every
-                // raymarch step (and again for the normal, ambient and shadow
-                // samples), so each removed fold saves a large multiple of work
-                // per pixel. Coarser fold detail is barely visible at this scale.
-                for (int i = 0; i < 3; i++) {
+                for (int i = 0; i < 5; i++) {
                     revIterPoint.xz = abs(revIterPoint.xz) - 2.1 + sin(revIterPoint.y * 0.5) * 0.5 * revBlend;
                     revIterPoint.xz *= revRotate(-0.785);
                     revIterPoint *= 2.1;
@@ -1375,17 +1372,15 @@
             vec2 revTrace(vec3 rayOrigin, vec3 rayDirection) {
                 vec2 sampleHit;
                 vec2 traceHit = vec2(-3.0);
-                // Trimmed from 96 steps (and a much looser hit epsilon/max
-                // distance) since this is by far the heaviest shader in the
-                // set: each step calls the now-3-fold revMap, so cutting the
-                // step budget in half is the single biggest win available here.
-                for (int i = 0; i < 48; i++) {
+                // A fixed loop bound is reliable in WebGL 1 and a little lighter
+                // than the 128-step live-coded original on mobile GPUs.
+                for (int i = 0; i < 96; i++) {
                     sampleHit = revMap(rayOrigin + rayDirection * traceHit.x);
-                    if (sampleHit.x < 0.001 || traceHit.x > 14.0) break;
+                    if (sampleHit.x < 0.0001 || traceHit.x > 17.0) break;
                     traceHit.x += sampleHit.x;
                     traceHit.y = sampleHit.y;
                 }
-                if (traceHit.x > 14.0) traceHit.y = 0.0;
+                if (traceHit.x > 17.0) traceHit.y = 0.0;
                 return traceHit;
             }
             float revAmbient(float distanceFromSurface) {
@@ -1481,10 +1476,7 @@
             // Meteor tuning
             // ============================================================
             
-            // Reduced from 6 to 4: this is the single biggest cost driver in the
-            // scene (3 layers x 3 lanes x METEOR_SLOTS potential meteor evaluations
-            // per pixel), so trimming it here has an outsized effect on frame cost.
-            #define METEOR_SLOTS 4
+            #define METEOR_SLOTS 6
             
             // Density
             #define LARGE_SPAWN_CHANCE .28
@@ -1543,10 +1535,7 @@
                 float value=0.;
                 float amplitude=.5;
                 
-                // Reduced from 5 octaves to 3: the extra fine detail was not
-                // visible against the meteor streaks and this is a meaningful
-                // per-pixel cost cut for a background layer.
-                for(int i=0;i<3;i++){
+                for(int i=0;i<5;i++){
                     value+=amplitude*noise(p);
                     p=p*2.03+vec2(17.1,-11.7);
                     amplitude*=.5;
