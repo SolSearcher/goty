@@ -1067,11 +1067,26 @@
         const color = activeShaderPreset === 3
             ? activeShaderBgHex
             : blendHexColors(activeShaderBgHex, activeShaderTintHex);
-        const themeMeta = document.getElementById('browser-theme-color');
-        if (themeMeta) themeMeta.setAttribute('content', color);
+
+        // Keep the page/safe-area background in sync immediately.
         document.documentElement.style.setProperty('--browser-chrome-color', color);
         document.documentElement.style.backgroundColor = color;
         document.body.style.backgroundColor = color;
+
+        // Safari may cache the existing theme-color element. Replacing it
+        // gives Safari a fresh theme-color declaration after palette changes.
+        const oldMeta = document.getElementById('browser-theme-color');
+        if (oldMeta) {
+            const newMeta = oldMeta.cloneNode(true);
+            newMeta.setAttribute('content', color);
+            oldMeta.parentNode.replaceChild(newMeta, oldMeta);
+        } else {
+            const newMeta = document.createElement('meta');
+            newMeta.id = 'browser-theme-color';
+            newMeta.name = 'theme-color';
+            newMeta.content = color;
+            document.head.appendChild(newMeta);
+        }
     }
 
     function toggleThemePopdown() {
