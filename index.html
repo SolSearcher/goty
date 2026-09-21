@@ -248,8 +248,15 @@
             padding: 10px 4px 16px !important; scroll-snap-type: x proximity;
             -webkit-overflow-scrolling: touch;
         }
-        #shader-btn-6 { order: -10; }
-        #shader-btn-3 { order: 100; }
+        /* Put the lighter / more useful shaders at the front of the two-row gallery.
+           With grid-auto-flow: column, items 1+2 form the first column, then 3+4, etc. */
+        #shader-btn-6 { order: 1; }  /* Meteor Shower */
+        #shader-btn-7 { order: 2; }  /* isovalues 3 */
+        #shader-btn-1 { order: 3; }  /* Squares Background v2 */
+        #shader-btn-5 { order: 4; }  /* Coral Reef Y28 */
+        #shader-btn-0 { order: 5; }  /* Balatro */
+        #shader-btn-3 { order: 998; } /* Custom Image */
+        #shader-btn-4 { order: 999; } /* Reclaim the streets — heaviest */
         #theme-popdown button.shader-choice-card {
             width: 210px !important; height: 142px !important; padding: 0 !important;
             overflow: hidden; position: relative; display: flex !important; flex-direction: column;
@@ -604,6 +611,79 @@
             .option-card { height: 100px; }
             .ranking-hint-desktop { display: none; }
             .ranking-hint-mobile { display: inline; }
+
+            /* Mobile game controls: use a predictable two-column layout instead
+               of letting the buttons wrap based on their text widths. */
+            .game-item {
+                align-items: flex-start;
+                padding: 16px 14px 18px;
+                gap: 14px;
+            }
+            .game-info {
+                width: 100%;
+                min-width: 0;
+                flex: 1 1 100%;
+                align-items: center;
+                gap: 16px;
+            }
+            .game-title-block {
+                min-width: 0;
+                flex: 1;
+            }
+            .game-item-actions {
+                width: 100%;
+                min-width: 0;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: stretch;
+                gap: 9px;
+                flex: 1 1 100%;
+            }
+            .game-item-actions > button {
+                width: 100%;
+                min-width: 0;
+                min-height: 46px;
+                padding: 9px 10px;
+                margin: 0;
+            }
+            .mobile-reorder-controls {
+                grid-column: 1 / -1;
+                width: 100%;
+                min-width: 0;
+                min-height: 46px;
+                padding: 4px 6px;
+                justify-content: space-between;
+                gap: 7px;
+            }
+            .mobile-reorder-label {
+                flex: 1;
+                padding-left: 7px;
+                text-align: left;
+            }
+            .mobile-rank-btn {
+                width: 38px;
+                height: 38px;
+                min-width: 38px;
+                flex: 0 0 38px;
+            }
+            .game-note-drawer {
+                width: 100%;
+                flex: 1 1 100%;
+                margin-top: 0;
+            }
+            .game-note-display {
+                width: 100%;
+                flex: 1 1 100%;
+            }
+        }
+
+        @media (max-width: 420px) {
+            .game-item { padding-left: 10px; padding-right: 10px; }
+            .game-info { gap: 12px; }
+            .game-icon { max-width: 105px; max-height: 125px; }
+            .game-item-actions { gap: 7px; }
+            .game-item-actions > button { font-size: 12px; padding-left: 7px; padding-right: 7px; }
+            .mobile-reorder-label { font-size: 10px; }
         }
 
         @media (hover: none), (pointer: coarse) {
@@ -1063,29 +1143,48 @@
         return `#${channel(0)}${channel(2)}${channel(4)}`;
     }
 
+    let browserChromeSyncQueued = false;
+    let lastBrowserChromeColor = '';
+
     function syncBrowserChromeColor() {
         const color = activeShaderPreset === 3
             ? activeShaderBgHex
             : blendHexColors(activeShaderBgHex, activeShaderTintHex);
 
-        // Keep the page/safe-area background in sync immediately.
+        // Keep the document and the Safari safe-area/background color in sync
+        // immediately. Safari's current UI can use either of these surfaces.
         document.documentElement.style.setProperty('--browser-chrome-color', color);
         document.documentElement.style.backgroundColor = color;
         document.body.style.backgroundColor = color;
 
-        // Safari may cache the existing theme-color element. Replacing it
-        // gives Safari a fresh theme-color declaration after palette changes.
-        const oldMeta = document.getElementById('browser-theme-color');
-        if (oldMeta) {
-            const newMeta = oldMeta.cloneNode(true);
-            newMeta.setAttribute('content', color);
-            oldMeta.parentNode.replaceChild(newMeta, oldMeta);
-        } else {
+        // Don't repeatedly mutate the meta element if the computed color has
+        // not changed. When it has changed, remove and re-insert the element so
+        // WebKit receives a fresh theme-color declaration.
+        if (color !== lastBrowserChromeColor) {
+            lastBrowserChromeColor = color;
+            const oldMeta = document.getElementById('browser-theme-color');
+            if (oldMeta) oldMeta.remove();
+
             const newMeta = document.createElement('meta');
             newMeta.id = 'browser-theme-color';
             newMeta.name = 'theme-color';
             newMeta.content = color;
             document.head.appendChild(newMeta);
+        }
+
+        // Give Safari a chance to process the theme-color mutation before the
+        // next expensive shader frame. This is particularly useful when
+        // switching to the heavy Reclaim the streets shader.
+        if (!browserChromeSyncQueued) {
+            browserChromeSyncQueued = true;
+            requestAnimationFrame(() => {
+                browserChromeSyncQueued = false;
+                const meta = document.getElementById('browser-theme-color');
+                if (meta) {
+                    meta.setAttribute('content', color);
+                    meta.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            });
         }
     }
 
@@ -1125,7 +1224,11 @@
             if (canvas) canvas.style.display = "block";
             document.body.style.backgroundImage = "none";
         }
+        // Apply the palette before the heavy shader starts using the new preset,
+        // and explicitly sync Safari's chrome color on the preset switch.
         applyActiveShaderPalette(shaderPalettes[activeShaderPreset] || SHADER_DEFAULT_PALETTES[activeShaderPreset], false);
+        syncBrowserChromeColor();
+        requestAnimationFrame(() => syncBrowserChromeColor());
         saveAppState();
     }
 
