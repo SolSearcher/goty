@@ -206,8 +206,8 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             max-width: 1300px;
             width: 100%;
             background: var(--bg-glass);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: var(--background-blur-filter, none);
+            -webkit-backdrop-filter: var(--background-blur-filter, none);
             padding: 40px;
             border-radius: 24px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.6), inset 0 0 0 1px var(--border);
@@ -239,13 +239,13 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         }
 
         .header-bubbles-row { display: flex; align-items: center; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 5px; width: 100%; }
-        .header-bubble { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); border-radius: 50px; padding: 10px 24px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; backdrop-filter: blur(8px); box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.2s ease; box-sizing: border-box; max-width: 100%; }
+        .header-bubble { background: rgba(0, 0, 0, 0.3); border: 1px solid var(--border); border-radius: 50px; padding: 10px 24px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); transition: all 0.2s ease; box-sizing: border-box; max-width: 100%; }
         .header-bubble.name-bubble { flex: 1; max-width: 480px; }
         .bubble-prefix { font-size: 18px; color: #888; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; flex-shrink: 0; }
         .name-input-bubble { background: transparent; border: none; color: #fff; font-size: 20px; outline: none; width: 100%; flex: 1; text-align: left; font-weight: 700; letter-spacing: 0.5px; }
         .name-input-bubble::placeholder { color: rgba(255,255,255,0.25); }
         .name-input-bubble:focus { color: var(--accent); }
-        .name-display-text { font-size: 22px; color: #fff; display: none; letter-spacing: 1px; font-weight: 700; }
+        .name-display-text { min-width:0; max-width:100%; overflow-wrap:anywhere; line-height:1.35; font-size: 22px; color: #fff; display: none; letter-spacing: 1px; font-weight: 700; }
         .theme-bubble-btn { color: var(--accent); font-size: 14px; font-weight: 700; cursor: pointer; flex-shrink: 0; }
         .theme-bubble-btn:hover { background: rgba(187, 134, 252, 0.2); color: #fff; transform: translateY(-2px); box-shadow: 0 6px 20px var(--accent-glow); }
 
@@ -460,7 +460,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 
         .sidebar-collapse-btn {
             position: sticky; top: -15px; z-index: 20; background: rgba(25, 25, 35, 0.92);
-            backdrop-filter: blur(12px); border: 1px solid var(--border); color: #03dac6; border-radius: 10px; width: 100%; padding: 8px 0; font-size: 16px; font-weight: 900;
+            backdrop-filter: var(--background-blur-filter, none); border: 1px solid var(--border); color: #03dac6; border-radius: 10px; width: 100%; padding: 8px 0; font-size: 16px; font-weight: 900;
             cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: -5px;
         }
         .sidebar.collapsed .sidebar-collapse-btn { top: -12px; background: transparent; border: none; padding: 4px 0; font-size: 18px; box-shadow: none; }
@@ -487,7 +487,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             background: rgba(0, 0, 0, 0.18); border: 2px dashed rgba(255,255,255,0.12); border-radius: 16px;
             display: flex; flex-direction: column; align-items: flex-start; min-height: 240px; padding: 25px;
             box-shadow: inset 0 0 20px rgba(0,0,0,0.3); width: 100%; box-sizing: border-box; position: relative;
-            backdrop-filter: blur(8px); transition: background 0.3s, border-color 0.3s; min-width: 0;
+            transition: background 0.3s, border-color 0.3s; min-width: 0;
         }
 
         /* Drag-Over Glow Effect - Supports native dragover and SortableJS internal ghost placeholder */
@@ -582,7 +582,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         /* MODALS */
         .modal { 
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(12px); 
+            background: rgba(0, 0, 0, 0.82); backdrop-filter: var(--background-blur-filter, none); 
             justify-content: center; align-items: center; z-index: 2000; padding: 20px; box-sizing: border-box;
         }
         .modal-content { 
@@ -615,7 +615,8 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
                 padding-left: max(8px, env(safe-area-inset-left));
                 background-attachment: scroll;
             }
-            .container { padding: 18px 12px; width: 100%; border-radius: 16px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+            .container { padding: 18px 12px; width: 100%; border-radius: 16px; backdrop-filter: var(--background-blur-filter, none); -webkit-backdrop-filter: var(--background-blur-filter, none); }
+            .header-bubble.name-bubble { flex:0 1 auto; }
             .header-bubbles-row { flex-direction: column; align-items: stretch; gap: 10px; width: 100%; }
             .header-bubble { width: 100% !important; max-width: 100% !important; justify-content: center; }
             .input-section { flex-direction: column !important; width: 100%; }
@@ -759,7 +760,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         body.shared-view .name-input-bubble { display: none !important; }
         body.shared-view .name-display-text { display: inline !important; text-align: center; }
         body.shared-view .header-bubbles-row { justify-content: center; }
-        body.shared-view .name-bubble { flex: 0 1 620px; max-width: 620px; justify-content: center; }
+        body.shared-view .name-bubble { flex: 0 1 auto; width: 100%; max-width: 620px; height: auto; justify-content: center; flex-wrap: wrap; }
         body.shared-view .shared-list-title { text-align: center; margin-top: 42px; }
         body.shared-view .ranking-hint { text-align: center; margin-top: -18px; }
         body.shared-view .ranking-hint-editor { display: none; }
@@ -821,7 +822,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         .export-render-root .name-input-bubble { display: none !important; }
         .export-render-root .name-display-text { display: inline !important; text-align: center; }
         .export-render-root .header-bubbles-row { justify-content: center; }
-        .export-render-root .name-bubble { flex: 0 1 620px; max-width: 620px; justify-content: center; }
+        .export-render-root .name-bubble { flex: 0 1 auto; width: 100%; max-width: 620px; height: auto; justify-content: center; flex-wrap: wrap; }
         .export-render-root .phase-2-container { display: block !important; opacity: 1 !important; }
         .export-render-root .list-section {
             display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px;
@@ -859,7 +860,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
 
         .image-export-modal {
             display: none; position: fixed; inset: 0; z-index: 5000; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
-            background: rgba(5, 5, 10, 0.9); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+            background: rgba(5, 5, 10, 0.9); -webkit-backdrop-filter: var(--background-blur-filter, none); backdrop-filter: var(--background-blur-filter, none);
             align-items: center; justify-content: center; box-sizing: border-box;
         }
         .image-export-modal.open { display: flex; }
@@ -898,8 +899,8 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
         @media print { #performance-debug { display: none !important; } }
 :root { --ui-font:'Outfit',system-ui,sans-serif; --ui-surface:#151827; --ui-border:rgba(255,255,255,.14); --ui-radius:16px; }
 [hidden] {display:none!important} body,input,textarea,button,select,.sidebar-game-name,.category-subtitle {font-family:var(--ui-font)!important} button,input,select,textarea {font-size:14px} button {min-height:40px} button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible,[contenteditable]:focus-visible {outline:3px solid #71d9f5!important;outline-offset:3px} button,input,textarea,select {border-radius:var(--ui-radius)} button {letter-spacing:0!important} .container {background:rgba(12,14,24,.89);border:1px solid var(--ui-border);box-shadow:0 20px 60px #0005} header {margin-bottom:22px}.main-title {text-shadow:0 0 18px var(--accent-glow)} .header-bubble {box-shadow:0 3px 12px #0002;backdrop-filter:none;border-radius:999px;min-height:52px;padding:12px 24px}.header-bubble .bubble-prefix,.name-input-bubble {font-family:var(--ui-font)!important}
-.workspace-nav {display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 0 22px;border-bottom:1px solid var(--ui-border);margin-bottom:30px}.workspace-nav button,.theme-tabs button {background:#ffffff09;border:1px solid var(--ui-border);color:#e9eef7;padding:9px 14px}.workspace-nav #save-status {margin-left:auto;font-size:12px;color:#a4c7ba}.save-error {color:#ffb08b!important}.section-heading h2 {font:600 30px var(--ui-font);margin:8px 0}.section-heading p,.share-intro p {color:#b2bdd1}.eyebrow {font:600 11px var(--ui-font);letter-spacing:2px;color:var(--accent)}#game-count {font-size:16px;color:#9aa6ba}#games-section,#phase-2-section,#share-section {scroll-margin-top:24px}.collection-tools {display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:22px 0 12px}.collection-tools input {flex:1;min-width:180px;padding:11px;background:#ffffff08;color:white;border:1px solid var(--ui-border)}.collection-tools label {font-size:13px;color:#c2cad9}.collection-tools [role=status] {font-size:12px;color:#aebbd1}.rank-number {font:600 14px var(--ui-font);color:#8795af;min-width:24px;font-variant-numeric:tabular-nums}.game-item {padding:14px!important;gap:12px;background:#ffffff03;border:1px solid var(--ui-border);cursor:default}.game-info {flex:1}.game-item-actions {gap:6px!important}.game-item-actions button {padding:8px 11px!important;font-size:12px!important;border-radius:9px}.game-note-drawer {flex-basis:100%}.game-more {position:relative}.game-more summary {cursor:pointer;padding:10px;font:500 12px var(--ui-font)}.game-more>div {position:absolute;right:0;top:100%;z-index:20;min-width:170px;background:#202638;padding:8px;border:1px solid var(--ui-border);border-radius:12px;box-shadow:0 10px 30px #0008}.game-more button {display:block;width:100%;text-align:left;background:none;color:#e7edf6;border:0}.game-more .delete-btn {color:#ffa3a3}.empty-collection {padding:30px;text-align:center;color:#aebbd1}.cover-button {display:inline-flex!important;align-items:center;justify-content:center;padding:0!important;background:none!important;border:0!important;border-radius:8px;min-height:0!important;box-shadow:none!important;max-width:100%}.cover-button img {display:block;max-width:100%}.award-game-title {display:block;max-width:150px;margin:8px auto 0;font:500 13px/1.4 var(--ui-font);color:#f1f4fa;text-align:center}.category-pick {margin-top:16px;padding:9px 15px;background:#ffffff09;border:1px dashed #ffffff4a;color:#e2ebfc}.dropped-icons-container:empty:before {content:'Choose the games that belong in this award.';font:14px/1.5 var(--ui-font);color:#a6b1c7;padding:12px 0}.category-slot {background:#111522b8!important;border:1px solid var(--ui-border);box-shadow:none;backdrop-filter:none}.category-title {font-size:25px}.sidebar-search {display:block;font-size:12px;color:#b6c1d5;margin:8px 0}.sidebar-search input {width:100%;min-width:0;padding:8px;background:#ffffff0a;border:1px solid var(--ui-border);color:white;box-sizing:border-box}.sidebar.collapsed .sidebar-search {display:none}.sidebar-item {background:none;color:white;border:1px solid transparent;width:100%;padding:8px}.sidebar-item.selected {border-color:var(--accent)}.theme-popdown-panel {padding:24px;background:#111522;box-shadow:none;border-color:var(--ui-border)}.theme-close,.close-btn {background:transparent;border:0;color:#c3cede;padding:0 10px;min-width:40px}.theme-tabs {display:flex;gap:8px;margin-bottom:20px}.theme-tabs button[aria-pressed=true] {border-color:var(--accent);color:var(--accent)}.theme-sample {display:flex;flex-direction:column;gap:8px;padding:16px;margin-bottom:16px;background:linear-gradient(120deg,var(--shader-bg-color),#1a2336);border-radius:12px}.theme-sample strong {font:24px var(--header-font);color:var(--text-color)}.theme-sample span {font:14px var(--ui-font);color:#e3e9f5}.theme-scroll-row {flex-wrap:wrap!important;overflow:visible!important}.advanced-settings {margin-top:20px;padding-top:16px;border-top:1px solid var(--ui-border);font:14px var(--ui-font)}.advanced-settings summary {cursor:pointer}.advanced-settings label {display:flex;align-items:center;gap:10px;margin:12px 0}.advanced-settings select,.share-intro select {background:#20283b;color:white;border:1px solid var(--ui-border);padding:10px;max-width:100%}.share-intro {flex-basis:100%;text-align:left}.share-intro h2 {font:600 28px var(--ui-font)}.share-intro label {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0}.backup-tools {display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.backup-tools button {padding:8px 14px;background:#ffffff08;border:1px solid var(--ui-border);color:#ced7e7}.export-section {gap:12px}.export-btn {font:600 14px var(--ui-font)!important;box-shadow:none!important}.review-details {width:100%;font:14px var(--ui-font)}.review-details summary {cursor:pointer;color:var(--accent);padding:10px}.review-details .game-note-display {text-align:left}.shared-view .editor-only,.shared-view #performance-debug {display:none!important}.shared-view .rank-number {align-self:flex-start}.shared-view .goty-section {margin-top:20px}.shared-view .ranking-hint {display:none}.proceed-phase-wrapper {display:none!important}#undo-notice {position:fixed;left:16px;bottom:16px;z-index:10010;display:flex;gap:12px;align-items:center;max-width:calc(100vw - 64px);padding:12px 16px;background:#242e43;border:1px solid #657b9f;border-radius:12px;box-shadow:0 10px 30px #0006;font:14px var(--ui-font)}#undo-notice button {background:none;color:#8ce8ff;border:0;padding:6px}
-dialog.ux-dialog {color:#eef3ff;background:#131a2a;border:1px solid #50617c;border-radius:20px;padding:24px;width:min(580px,calc(100vw - 48px));max-height:85dvh;box-sizing:border-box}dialog::backdrop {background:#050812c9;backdrop-filter:blur(4px)}.dialog-heading {display:flex;align-items:center;justify-content:space-between;gap:12px}.dialog-heading h2 {font:600 22px var(--ui-font);margin:0 0 16px}.dialog-heading button {background:none;border:0;color:#c3cede}.ux-dialog input[type=search] {box-sizing:border-box;width:100%;padding:12px;background:#ffffff08;border:1px solid var(--ui-border);color:white}#picker-list {overflow:auto;max-height:48dvh;margin:16px 0;display:grid;gap:8px}.picker-option {display:flex;align-items:center;gap:12px;padding:10px;background:#ffffff06;border:1px solid var(--ui-border);border-radius:10px;cursor:pointer}.picker-option:has(input:checked) {border-color:#6cdbef;background:#6cdbef12}.picker-option img {width:36px;height:48px;object-fit:cover;border-radius:4px}.picker-option input {width:18px;height:18px;accent-color:#72e5ed}.dialog-actions {display:flex;align-items:center;gap:12px;justify-content:flex-end}.dialog-actions button {padding:10px 20px}.dialog-actions span {margin-right:auto;color:#aebbd1}#page-preview {width:96vw;max-width:1440px;height:94dvh;max-height:94dvh;overflow:hidden}#page-preview-frame {width:100%;height:calc(100% - 55px);border:0;background:#0b1020;border-radius:12px}body:has(dialog[open]) {overflow:hidden}.export-render-root .editor-only,.export-render-root .category-pick,.export-render-root .game-more {display:none!important}
+.workspace-nav {display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 0 22px;border-bottom:1px solid var(--ui-border);margin-bottom:30px}.workspace-nav button,.theme-tabs button {background:#ffffff09;border:1px solid var(--ui-border);color:#e9eef7;padding:9px 14px}.workspace-nav #save-status {margin-left:auto;font-size:12px;color:#a4c7ba}.save-error {color:#ffb08b!important}.section-heading h2 {font:600 30px var(--ui-font);margin:8px 0}.section-heading p,.share-intro p {color:#b2bdd1}.eyebrow {font:600 11px var(--ui-font);letter-spacing:2px;color:var(--accent)}#game-count {font-size:16px;color:#9aa6ba}#games-section,#phase-2-section,#share-section {scroll-margin-top:24px}.collection-tools {display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:22px 0 12px}.collection-tools input {flex:1;min-width:180px;padding:11px;background:#ffffff08;color:white;border:1px solid var(--ui-border)}.collection-tools label {font-size:13px;color:#c2cad9}.collection-tools [role=status] {font-size:12px;color:#aebbd1}.rank-number {font:600 14px var(--ui-font);color:#8795af;min-width:24px;font-variant-numeric:tabular-nums}.game-item {padding:14px!important;gap:12px;background:#ffffff03;border:1px solid var(--ui-border);cursor:default}.game-info {flex:1}.game-item-actions {gap:6px!important}.game-item-actions button {padding:8px 11px!important;font-size:12px!important;border-radius:9px}.game-note-drawer {flex-basis:100%}.game-more {position:relative}.game-more summary {cursor:pointer;padding:10px;font:500 12px var(--ui-font)}.game-more>div {position:absolute;right:0;top:100%;z-index:20;min-width:170px;background:#202638;padding:8px;border:1px solid var(--ui-border);border-radius:12px;box-shadow:0 10px 30px #0008}.game-more button {display:block;width:100%;text-align:left;background:none;color:#e7edf6;border:0}.game-more .delete-btn {color:#ffa3a3}.empty-collection {padding:30px;text-align:center;color:#aebbd1}.cover-button {display:inline-flex!important;align-items:center;justify-content:center;padding:0!important;background:none!important;border:0!important;border-radius:8px;min-height:0!important;box-shadow:none!important;max-width:100%}.cover-button img {display:block;max-width:100%}.award-game-title {display:block;max-width:150px;margin:8px auto 0;font:500 13px/1.4 var(--ui-font);color:#f1f4fa;text-align:center}.category-pick {margin-top:16px;padding:9px 15px;background:#ffffff09;border:1px dashed #ffffff4a;color:#e2ebfc}.dropped-icons-container:empty:before {content:'Choose the games that belong in this award.';font:14px/1.5 var(--ui-font);color:#a6b1c7;padding:12px 0}.category-slot {background:#111522b8!important;border:1px solid var(--ui-border);box-shadow:none;backdrop-filter:none}.category-title {font-size:25px}.sidebar-search {display:block;font-size:12px;color:#b6c1d5;margin:8px 0}.sidebar-search input {width:100%;min-width:0;padding:8px;background:#ffffff0a;border:1px solid var(--ui-border);color:white;box-sizing:border-box}.sidebar.collapsed .sidebar-search {display:none}.sidebar-item {background:none;color:white;border:1px solid transparent;width:100%;padding:8px}.sidebar-item.selected {border-color:var(--accent)}.theme-popdown-panel {padding:24px;background:#111522;box-shadow:none;border-color:var(--ui-border)}.theme-close,.close-btn {background:transparent;border:0;color:#c3cede;padding:0 10px;min-width:40px}.theme-tabs {display:flex;gap:8px;margin-bottom:20px}.theme-tabs button[aria-pressed=true] {border-color:var(--accent);color:var(--accent)}.theme-sample {display:flex;flex-direction:column;gap:8px;padding:16px;margin-bottom:16px;background:linear-gradient(120deg,var(--shader-bg-color),#1a2336);border-radius:12px}.theme-sample strong {font:24px var(--header-font);color:var(--text-color)}.theme-sample span {font:14px var(--ui-font);color:#e3e9f5}.theme-scroll-row {flex-wrap:wrap!important;overflow:visible!important}.advanced-settings {margin-top:20px;padding-top:16px;border-top:1px solid var(--ui-border);font:14px var(--ui-font)}.advanced-settings summary {cursor:pointer}.advanced-settings label {display:flex;align-items:center;gap:10px;margin:12px 0}.advanced-settings select,.share-intro select {background:#20283b;color:white;border:1px solid var(--ui-border);padding:10px;max-width:100%}.share-intro {flex-basis:100%;text-align:left}.share-intro h2 {font:600 28px var(--ui-font)}.share-intro label {display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:16px 0}.backup-tools {display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.backup-tools button {padding:8px 14px;background:#ffffff08;border:1px solid var(--ui-border);color:#ced7e7}.export-section {gap:12px}.export-btn {font:600 14px var(--ui-font)!important;box-shadow:none!important}.review-details {width:100%;font:14px var(--ui-font)}.review-details summary {cursor:pointer;color:var(--accent);padding:10px}.review-details .game-note-display {text-align:left}.shared-view .editor-only,.shared-view #performance-debug {display:none!important}.shared-view .rank-number {align-self:flex-start}.shared-view .goty-section {margin-top:20px}.shared-view .ranking-hint {display:none}#undo-notice {position:fixed;left:16px;bottom:16px;z-index:10010;display:flex;gap:12px;align-items:center;max-width:calc(100vw - 64px);padding:12px 16px;background:#242e43;border:1px solid #657b9f;border-radius:12px;box-shadow:0 10px 30px #0006;font:14px var(--ui-font)}#undo-notice button {background:none;color:#8ce8ff;border:0;padding:6px}
+dialog.ux-dialog {color:#eef3ff;background:#131a2a;border:1px solid #50617c;border-radius:20px;padding:24px;width:min(580px,calc(100vw - 48px));max-height:85dvh;box-sizing:border-box}dialog::backdrop {background:#050812c9;backdrop-filter: var(--background-blur-filter, none)}.dialog-heading {display:flex;align-items:center;justify-content:space-between;gap:12px}.dialog-heading h2 {font:600 22px var(--ui-font);margin:0 0 16px}.dialog-heading button {background:none;border:0;color:#c3cede}.ux-dialog input[type=search] {box-sizing:border-box;width:100%;padding:12px;background:#ffffff08;border:1px solid var(--ui-border);color:white}#picker-list {overflow:auto;max-height:48dvh;margin:16px 0;display:grid;gap:8px}.picker-option {display:flex;align-items:center;gap:12px;padding:10px;background:#ffffff06;border:1px solid var(--ui-border);border-radius:10px;cursor:pointer}.picker-option:has(input:checked) {border-color:#6cdbef;background:#6cdbef12}.picker-option img {width:36px;height:48px;object-fit:cover;border-radius:4px}.picker-option input {width:18px;height:18px;accent-color:#72e5ed}.dialog-actions {display:flex;align-items:center;gap:12px;justify-content:flex-end}.dialog-actions button {padding:10px 20px}.dialog-actions span {margin-right:auto;color:#aebbd1}#page-preview {width:96vw;max-width:1440px;height:94dvh;max-height:94dvh;overflow:hidden}#page-preview-frame {width:100%;height:calc(100% - 55px);border:0;background:#0b1020;border-radius:12px}body:has(dialog[open]) {overflow:hidden}.export-render-root .editor-only,.export-render-root .category-pick,.export-render-root .game-more {display:none!important}
 @media(max-width:700px){.workspace-nav {gap:6px}.workspace-nav button {flex:1;padding:9px 6px;font-size:12px}.workspace-nav #save-status {flex-basis:100%;margin:4px 0}.sidebar {display:none!important}.awards-section {display:block}.awards-content {width:100%!important}.game-item {gap:8px}.game-item-actions {display:flex!important;width:100%;flex-wrap:wrap!important;justify-content:flex-end}.game-item-actions>button {width:auto!important;flex:0 1 auto!important}.mobile-reorder-controls {margin-right:auto}.theme-popdown-panel {padding:18px 12px}.theme-tabs button {flex:1;padding:8px}.share-intro select {width:100%}.export-section>button {width:100%}.collection-tools label {flex-basis:100%}dialog.ux-dialog {padding:16px}.theme-close {top:8px;right:8px}.goty-section {padding:20px 12px}}
 
 
@@ -1064,7 +1065,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
 #share-section { border-radius:28px; }
 #share-section .share-link-primary { border-radius:999px; }
 #share-section .share-secondary button,#share-section .share-presentation select { border-radius:14px; }
-@media(max-width:540px) { .header-bubble { padding:12px 18px; } .header-bubble.name-bubble { flex-basis:100%; } #share-section { border-radius:24px; } }
+@media(max-width:540px) { .header-bubble { padding:12px 18px; } .header-bubble.name-bubble { flex:0 1 auto; } #share-section { border-radius:24px; } }
 </style>
 
 <style id="stable-background-and-opacity">
@@ -1072,11 +1073,11 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
 body { position:relative; isolation:isolate; min-height:100vh; min-height:100svh; background-image:none!important; }
 #page-background { position:fixed; top:0; left:0; width:100%; height:100vh; height:100lvh; z-index:0; pointer-events:none; overflow:hidden; contain:strict; background:var(--browser-chrome-color); }
 #page-background #shader-bg,#image-background { position:absolute; inset:0; width:100%; height:100%; }
-#page-background #shader-bg { transform:none; will-change:auto; }
+#page-background #shader-bg { contain: strict; transform: translateZ(0); will-change: transform; }
 #image-background { background-position:center; background-size:cover; background-repeat:no-repeat; }
 .export-render-root .container { background:rgba(12,14,24,var(--panel-opacity)); }
 body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--panel-opacity)); transition:background-color .2s ease,border-color .2s ease; }
-@media(any-pointer:coarse) { body>.container { backdrop-filter:none; -webkit-backdrop-filter:none; } }
+/* Touch devices use the same explicit blur preference as desktop. */
 .opacity-setting { margin:12px 0 20px; padding:16px; border:1px solid var(--ui-border); border-radius:16px; }
 .opacity-setting label { display:flex; justify-content:space-between; gap:12px; font-size:14px; }
 .opacity-setting input { width:100%; margin:14px 0; accent-color:var(--accent); }
@@ -1086,8 +1087,46 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
 .category-recovery { margin:24px auto 0; max-width:600px; text-align:center; font:12px/1.6 var(--ui-font); color:#aeb8cb; }
 .category-recovery summary { cursor:pointer; width:fit-content; margin:auto; }
 </style>
+<style id="progressive-editor-flow">
+body:not(.phase-2-unlocked):not(.shared-view) .phase-divider { display:none; }
+.proceed-phase-btn { display:inline-flex; align-items:center; justify-content:center; gap:14px; border-radius:999px; padding:15px 28px; background:var(--accent); color:#141020; box-shadow:none; font:600 15px/1.4 var(--ui-font); text-transform:none; }
+.proceed-phase-btn:hover { background:var(--accent); filter:brightness(1.08); box-shadow:0 4px 16px #0003; transform:translateY(-1px); }
+#share-section .share-save-status { margin-top:18px; color:#9da9be; font:12px/1.5 var(--ui-font); }
+</style>
+<style>
+#rename-game-form>label { display:block; margin:12px 0 8px; font:500 14px var(--ui-font); }
+#rename-game-input { box-sizing:border-box; width:100%; padding:12px 16px; font-size:16px; color:var(--text-color); background:#ffffff08; border:1px solid var(--ui-border); }
+#rename-game-help,#rename-game-status { font:13px/1.6 var(--ui-font); color:#b2bdd1; }
+#rename-game-save:disabled { opacity:.6; cursor:wait; }
+</style>
+<style id="stable-game-actions">
+/* Reserve the longer Finished state so toggling never moves adjacent actions. */
+.game-item-actions > .finish-toggle-btn { box-sizing:border-box; width:116px!important; min-width:116px; max-width:116px; flex:0 0 116px!important; white-space:nowrap; }
+@media(max-width:768px) {
+    .game-item-actions { display:flex!important; flex-wrap:wrap!important; justify-content:flex-start; align-items:center; width:100%; gap:8px!important; }
+    .game-item-actions > button { width:auto!important; flex:0 0 auto!important; min-height:44px; margin:0; }
+    .game-item-actions > .finish-toggle-btn { width:116px!important; flex:0 0 116px!important; }
+    .game-item-actions .mobile-reorder-controls { flex:0 0 100%; box-sizing:border-box; margin-right:0; }
+    .game-item-actions .game-more { margin:0; }
+    .game-item-actions .game-more summary { box-sizing:border-box; min-height:44px; display:flex; align-items:center; gap:6px; }
+    .game-item-actions .game-more summary::before { content:'▸'; }
+    .game-item-actions .game-more[open] summary::before { content:'▾'; }
+    .game-item-actions .game-more summary::-webkit-details-marker { display:none; }
+}
+</style>
+<style id="background-blur-controls">
+:root { --background-blur-filter:none; }
+.background-blur-setting { margin:0 0 18px; padding:16px; border:1px solid var(--ui-border); border-radius:16px; }
+.background-blur-setting .blur-toggle { display:flex; align-items:center; gap:10px; font:500 14px var(--ui-font); }
+.blur-toggle input { width:18px; height:18px; margin:0; accent-color:var(--accent); }
+.blur-amount-row { margin-top:18px; }
+.blur-amount-row label { display:flex; justify-content:space-between; font:13px var(--ui-font); color:#c5cede; }
+.blur-amount-row input { width:100%; margin:12px 0 0; accent-color:var(--accent); }
+.blur-amount-row input:disabled { opacity:.4; }
+#background-blur-warning { max-width:65ch; color:#b4bdce; font:12px/1.6 var(--ui-font); margin:12px 0 0; }
+</style>
 </head>
-<body class="phase-2-unlocked">
+<body>
 <div id="boot-screen" role="status" aria-live="polite"><span class="boot-mark" aria-hidden="true"></span><span class="boot-title">GAME AWARDS 2026</span><p id="boot-message">Getting your awards ready…</p><button id="boot-retry" onclick="location.reload()">Try again</button></div>
 <noscript><p style="color:#eef3ff;font:16px system-ui;padding:24px">Enable JavaScript to open your Game Awards page.</p></noscript>
 
@@ -1126,7 +1165,7 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
             </div>
             <button class="header-bubble theme-bubble-btn" onclick="toggleThemePopdown()">🎨 Customize Theme</button>
         </div>
-        <span id="save-status" class="header-save-status editor-only" role="status">Saved on this device</span>
+
     </header>
 
 
@@ -1213,7 +1252,11 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
                 </div>
             </div>
         </div>
-        <div class="advanced-settings"><label for="background-motion">Background motion <select id="background-motion" onchange="backgroundMotion=this.value;saveAppState()"><option value="animated">Animated</option><option value="still">Still</option></select></label>
+        <div class="advanced-settings"><div class="background-blur-setting">
+<label class="blur-toggle"><input id="background-blur-enabled" type="checkbox" onchange="setBackgroundBlur(this.checked,backgroundBlurAmount)" aria-describedby="background-blur-warning"> Background blur</label>
+<div class="blur-amount-row"><label for="background-blur-amount">Blur amount <output id="background-blur-value" for="background-blur-amount">6 px</output></label><input id="background-blur-amount" type="range" min="1" max="24" step="1" value="6" disabled oninput="setBackgroundBlur(backgroundBlurEnabled,Number(this.value))" aria-describedby="background-blur-warning"></div>
+<p id="background-blur-warning">Blur can reduce scrolling smoothness and increase GPU use. Higher amounts may cost more. Shader FPS controls do not limit blur work. Turn blur off for best performance.</p>
+</div><label for="background-motion">Background motion <select id="background-motion" onchange="backgroundMotion=this.value;saveAppState()"><option value="animated">Animated</option><option value="still">Still</option></select></label>
         <details><summary>Advanced performance</summary><label><input type="checkbox" onchange="document.getElementById('performance-debug').hidden=!this.checked"> Show FPS and frame controls</label></details></div>
     </div>
 
@@ -1238,10 +1281,10 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
 
     <!-- PHASE TRANSITION BUTTON -->
     <div class="proceed-phase-wrapper" id="proceed-phase-btn-wrap">
-        <button class="proceed-phase-btn" onclick="unlockPhase2()">✨ Continue to Award Categories 🚀</button>
+        <button class="proceed-phase-btn" onclick="unlockPhase2()" aria-controls="phase-2-section" aria-expanded="false">Continue to awards <span aria-hidden="true">→</span></button>
     </div>
 
-    <hr>
+    <hr class="phase-divider">
 
     <!-- PHASE 2: AWARDS & CATEGORIES -->
     <div class="phase-2-container" id="phase-2-section">
@@ -1306,6 +1349,7 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
                 <div class="share-backup-actions" role="group" aria-label="Manage backups"><button onclick="downloadBackup()" title="Save an editable JSON backup">Export backup</button><button onclick="document.getElementById('backup-file').click()" title="Restore awards from a JSON backup">Import backup</button></div>
                 <input hidden id="backup-file" type="file" accept=".json,application/json" onchange="importBackup(this.files[0])">
             </div>
+            <span id="save-status" class="share-save-status editor-only" role="status">Saved on this device</span>
         </section>
         <details class="category-recovery editor-only"><summary>Category settings</summary><p>Restore the five original awards. Your game list, notes and GOTY are kept.</p><button type="button" onclick="restoreDefaultCategories()">Reset categories to defaults</button></details>
     </div>
@@ -1328,6 +1372,13 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
 
 
 <div id="undo-notice" class="editor-only" role="status" hidden><span></span><button onclick="undoLastChange()">Undo</button><button aria-label="Dismiss undo notification" onclick="this.parentElement.hidden=true">×</button></div>
+<dialog id="rename-game-dialog" class="ux-dialog" aria-labelledby="rename-game-heading">
+<form id="rename-game-form" onsubmit="event.preventDefault();saveRenamedGame()">
+<div class="dialog-heading"><h2 id="rename-game-heading" tabindex="-1" autofocus>Rename game</h2><button type="button" aria-label="Close rename game" onclick="document.getElementById('rename-game-dialog').close()">×</button></div>
+<label for="rename-game-input">Game title</label><input id="rename-game-input" type="text" required maxlength="300" autocomplete="off" aria-describedby="rename-game-help">
+<p id="rename-game-help"></p><p id="rename-game-status" role="status" aria-live="polite"></p>
+<div class="dialog-actions"><button type="button" onclick="document.getElementById('rename-game-dialog').close()">Cancel</button><button id="rename-game-save" type="submit">Save name</button></div>
+</form></dialog>
 <dialog id="game-picker" class="ux-dialog" aria-labelledby="picker-heading"><div class="dialog-heading"><h2 id="picker-heading" tabindex="-1" autofocus>Choose games</h2><button aria-label="Close game picker" onclick="this.closest('dialog').close()">×</button></div><input type="search" id="picker-search" aria-label="Search games" placeholder="Search your games…" oninput="renderPicker()"><div id="picker-list"></div><div class="dialog-actions"><span id="picker-count" role="status"></span><button onclick="this.closest('dialog').close()">Cancel</button><button onclick="applyGamePicker()">Done</button></div></dialog>
 <dialog id="page-preview" class="ux-dialog" aria-label="Interactive awards page preview"><div class="dialog-heading"><h2>Your shared page</h2><button onclick="this.closest('dialog').close()">Back to editing</button></div><iframe id="page-preview-frame" title="Interactive shared page preview" sandbox="allow-scripts allow-same-origin allow-popups"></iframe></dialog>
 
@@ -1612,6 +1663,7 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
 
     function unlockPhase2() {
         document.body.classList.add('phase-2-unlocked');
+        document.querySelector('.proceed-phase-btn')?.setAttribute('aria-expanded','true');
         const phase2Section = document.getElementById('phase-2-section');
         if (phase2Section) {
             requestAnimationFrame(() => {
@@ -2730,7 +2782,7 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
         });
 
         return { 
-            presentationStyle, backgroundMotion, panelOpacity, userName, isListView, games, categories: slotsData,
+            presentationStyle, backgroundMotion, panelOpacity, backgroundBlurEnabled, backgroundBlurAmount, userName, isListView, games, categories: slotsData,
             goty: { gameId: gotyGameId, blurb: gotyBlurb },
             fontPreset: activeFontPreset, shaderPreset: activeShaderPreset, customBgUrl: activeCustomBgUrl,
             shaderTintHex: activeShaderTintHex, shaderColor2Hex: activeShaderColor2Hex, shaderBgHex: activeShaderBgHex,
@@ -2747,7 +2799,7 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
     function loadFromLocalStorage() { try { const saved = localStorage.getItem("goty_app_data"); if(saved) loadAppState(JSON.parse(saved)); else initDefaultState(); } catch (_) { initDefaultState(); setSaveStatus('Storage unavailable — download a backup', true); } }
 
     function initDefaultState() {
-        uxLoading = true; presentationStyle = "games"; backgroundMotion = "animated"; setPanelOpacity(28, false);
+        uxLoading = true; presentationStyle = "games"; backgroundMotion = "animated"; setPanelOpacity(28, false); setBackgroundBlur(false,6,false);
         games = []; gotyGameId = null; document.getElementById("goty-blurb-input").value = "";
         document.getElementById("category-grid").innerHTML = "";
         shaderPalettes = cloneShaderDefaults();
@@ -2762,6 +2814,7 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
         presentationStyle = ["games","ceremony","showcase"].includes(data.presentationStyle) ? data.presentationStyle : "games";
         backgroundMotion = data.backgroundMotion === "still" ? "still" : "animated";
         setPanelOpacity(data.panelOpacity, false);
+        setBackgroundBlur(data.backgroundBlurEnabled===true,data.backgroundBlurAmount,false);
         const nameVal = data.userName || "";
         document.getElementById("user-name-input").value = nameVal;
         document.getElementById("name-display").innerText = nameVal || "Anonymous";
@@ -3248,14 +3301,15 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
     }
 
     // ORIGINAL WORKING FETCH LOGIC
-    async function fetchGameData(gameName) {
+    async function fetchGameData(gameName, signal) {
+        if(signal?.aborted)throw new Error("Lookup cancelled");
         let options = [], steamId = null; const variants = getSearchVariants(gameName);
         const addOption = (url) => { if (url && typeof url === 'string' && !options.includes(url)) options.push(url); };
         
         for (const queryVariant of variants) {
             if (steamId) break;
             try {
-                const resp = await fetch(`https://www.cheapshark.com/api/1.0/games?title=${encodeURIComponent(queryVariant)}&limit=10`);
+                const resp = await fetch(`https://www.cheapshark.com/api/1.0/games?title=${encodeURIComponent(queryVariant)}&limit=10`, {signal});
                 if (resp.ok) {
                     const data = await resp.json();
                     let validGame = data.find(i => i.steamAppID && !i.external.toLowerCase().includes('server') && !i.external.toLowerCase().includes('soundtrack') && !i.external.toLowerCase().includes('dlc'));
@@ -3263,15 +3317,15 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
                     if (validGame) { steamId = validGame.steamAppID; addOption(`https://shared.cloudflare.steamstatic.com/store_item_assets/steam/apps/${steamId}/library_600x900.jpg`); }
                     data.forEach(i => { if (i.thumb) addOption(i.thumb); });
                 }
-            } catch (e) {}
+            } catch (e) { if(signal?.aborted)throw e; }
         }
         for (const v of variants) {
             const cleanV = v.trim().replace(/ /g, '_');
             for (const title of [cleanV, cleanV + '_(video_game)']) {
                 try {
-                    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`);
+                    const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`, {signal});
                     if (res.ok) { const data = await res.json(); if (data.thumbnail?.source) addOption(data.thumbnail.source); }
-                } catch(e) {}
+                } catch(e) { if(signal?.aborted)throw e; }
             }
         }
         options.push(`https://placehold.co/150x200/2a2a2a/bb86fc?text=${encodeURIComponent(gameName.substring(0, 2).toUpperCase())}`);
@@ -3282,7 +3336,7 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
         const input = document.getElementById("game-input"), addBtn = document.getElementById("add-btn"), gameName = input.value.trim();
         if (!gameName) return; addBtn.innerText = "Fetching..."; addBtn.disabled = true;
         const data = await fetchGameData(gameName);
-        games.unshift({ id: 'game_' + Date.now(), name: gameName, icon: data.icons[0], steamAppID: data.steamAppID, finished: false, note: '', rating: null, ratingStyle: 'number' });
+        games.unshift({ id: 'game_' + Date.now(), name: gameName, icon: data.icons[0], artworkSource: 'auto', steamAppID: data.steamAppID, finished: false, note: '', rating: null, ratingStyle: 'number' });
         input.value = ""; addBtn.innerText = "Add Game"; addBtn.disabled = false;
         renderMainList(); renderSidebar(); saveAppState();
     }
@@ -3470,7 +3524,7 @@ body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--p
         document.getElementById("store-modal").style.display = "flex";
     }
 
-    function updateGameIcon(id, url) { const game = games.find(g => g.id === id); if (game) { game.icon = url; renderMainList(); renderSidebar(); renderGotySlot(); document.querySelectorAll(`.dropped-icon[data-game-id="${id}"]`).forEach(img => img.src = url); saveAppState(); } closeModal('icon-modal'); }
+    function updateGameIcon(id, url) { const game = games.find(g => g.id === id); if (game) { game.icon = url; game.artworkSource = 'custom'; renderMainList(); renderSidebar(); renderGotySlot(); document.querySelectorAll(`.dropped-icon[data-game-id="${id}"]`).forEach(img => img.src = url); saveAppState(); } closeModal('icon-modal'); }
     function applyCustomUrl() { const url = document.getElementById("custom-url-input").value.trim(); if (url && activeModalGameId) { updateGameIcon(activeModalGameId, url); document.getElementById("custom-url-input").value = ""; } }
     function deleteGame(id) { rememberUndo("Game removed"); games = games.filter(g => g.id !== id); if(gotyGameId === id) { gotyGameId = null; } renderMainList(); renderSidebar(); renderGotySlot(); document.querySelectorAll(`.dropped-game-wrapper[data-game-wrapper-id="${id}"]`).forEach(w => w.remove()); saveAppState(); }
 
@@ -3649,6 +3703,7 @@ function packShareState(state) {
         const steamId=game.steamAppID ? String(game.steamAppID) : '';
         const extras={};
         if(game.icon && game.icon!==standardGameArt(game.name,steamId)) extras.i=game.icon;
+        if(game.artworkSource==='custom')extras.a=1;else if(game.artworkSource==='auto'&&extras.i)extras.a=0;
         if(game.note) extras.n=game.note;
         if(game.finished) extras.f=1;
         if(game.rating!==null&&game.rating!==undefined&&game.rating!==''&&Number.isFinite(Number(game.rating))) {extras.r=Number(game.rating);if(game.ratingStyle==='icon')extras.y=1;}
@@ -3665,6 +3720,7 @@ function packShareState(state) {
     if(state.presentationStyle==='showcase')data.p=1;
     else if(state.presentationStyle==='games'||!state.presentationStyle)data.p=2;
     if(state.backgroundMotion==='still')data.m=1;
+    if(state.backgroundBlurEnabled===true)data.h=normalizeBlurAmount(state.backgroundBlurAmount);
     const opacity=normalizePanelOpacity(state.panelOpacity);if(opacity!==28)data.q=opacity;
     if(state.fontPreset&&state.fontPreset!=='default')data.f=state.fontPreset;
     if(preset===3&&state.customBgUrl)data.u=state.customBgUrl;
@@ -3682,7 +3738,7 @@ function unpackShareState(data) {
     const games=data.g.map((row,index)=>{
         if(!Array.isArray(row)||typeof row[0]!=='string'||(row[1]!==0&&!/^\d+$/.test(String(row[1]))))throw Error('Invalid game');
         const x=row[2]||{};if(typeof x!=='object')throw Error('Invalid game options');
-        return {id:'game_'+index,name:row[0],steamAppID:row[1]?String(row[1]):null,icon:typeof x.i==='string'?x.i:standardGameArt(row[0],row[1]),note:typeof x.n==='string'?x.n:'',finished:x.f===1,rating:Number.isFinite(x.r)?Math.min(10,Math.max(1,x.r)):null,ratingStyle:x.y===1?'icon':'number'};
+        return {id:'game_'+index,name:row[0],steamAppID:row[1]?String(row[1]):null,icon:typeof x.i==='string'?x.i:standardGameArt(row[0],row[1]),artworkSource:x.a===1?'custom':x.a===0?'auto':undefined,note:typeof x.n==='string'?x.n:'',finished:x.f===1,rating:Number.isFinite(x.r)?Math.min(10,Math.max(1,x.r)):null,ratingStyle:x.y===1?'icon':'number'};
     });
     function ref(index){if(!Number.isInteger(index)||index<0||index>=games.length)throw Error('Invalid game reference');return games[index].id;}
     const categories=data.c.map(row=>{
@@ -3693,7 +3749,7 @@ function unpackShareState(data) {
     const base=SHADER_DEFAULT_PALETTES[data.s],o=data.o||{};
     for(const color of Object.values(o))if(typeof color!=='string'||!/^#[0-9a-f]{6}$/i.test(color))throw Error('Invalid color');
     const palette={...base,color1:o.a||base.color1,color2:o.b||base.color2,color3:o.c||base.color3,accent:o.d||base.accent};
-    return {panelOpacity:normalizePanelOpacity(data.q),userName:typeof data.n==='string'?data.n:'',games,categories,goty:{gameId:data.w===undefined?null:ref(data.w),blurb:typeof data.b==='string'?data.b:''},shaderPreset:Number(data.s),shaderPalettes:{[data.s]:palette},accentHex:palette.accent,fontColorHex:o.e||'#f0f0f0',fontPreset:typeof data.f==='string'?data.f:'default',customBgUrl:typeof data.u==='string'?data.u:'',isListView:data.l===1,presentationStyle:data.p===1?'showcase':data.p===2?'games':'ceremony',backgroundMotion:data.m===1?'still':'animated'};
+    return {backgroundBlurEnabled:Number.isFinite(data.h)&&data.h>0,backgroundBlurAmount:normalizeBlurAmount(data.h),panelOpacity:normalizePanelOpacity(data.q),userName:typeof data.n==='string'?data.n:'',games,categories,goty:{gameId:data.w===undefined?null:ref(data.w),blurb:typeof data.b==='string'?data.b:''},shaderPreset:Number(data.s),shaderPalettes:{[data.s]:palette},accentHex:palette.accent,fontColorHex:o.e||'#f0f0f0',fontPreset:typeof data.f==='string'?data.f:'default',customBgUrl:typeof data.u==='string'?data.u:'',isListView:data.l===1,presentationStyle:data.p===1?'showcase':data.p===2?'games':'ceremony',backgroundMotion:data.m===1?'still':'animated'};
 }
 function decodeSharePayload(payload){
     const json=typeof LZString!=='undefined'?LZString.decompressFromEncodedURIComponent(payload):decodeURIComponent(atob(payload));
@@ -3758,9 +3814,19 @@ function downloadWebsiteLauncher(){
 }
 
 // Presentation and editing upgrades. Data stays compatible with existing saves.
-let presentationStyle = 'games', backgroundMotion = 'animated', panelOpacity = 28, uxLoading = false;
+let presentationStyle = 'games', backgroundMotion = 'animated', panelOpacity = 28, backgroundBlurEnabled = false, backgroundBlurAmount = 6, uxLoading = false;
 const openNotes = new Set();
 let undoState = null, pickerTarget = null, pickerSelection = new Set(), previewSource = '';
+function normalizeBlurAmount(value){return typeof value==='number'&&Number.isFinite(value)?Math.min(24,Math.max(1,Math.round(value))):6;}
+function setBackgroundBlur(enabled,amount,save=true){
+    backgroundBlurEnabled=enabled===true;backgroundBlurAmount=normalizeBlurAmount(amount);
+    document.documentElement.style.setProperty('--background-blur-filter',backgroundBlurEnabled?`blur(${backgroundBlurAmount}px)`:'none');
+    const toggle=document.getElementById('background-blur-enabled'),slider=document.getElementById('background-blur-amount'),output=document.getElementById('background-blur-value');
+    if(toggle)toggle.checked=backgroundBlurEnabled;
+    if(slider){slider.value=backgroundBlurAmount;slider.disabled=!backgroundBlurEnabled;}
+    if(output)output.textContent=backgroundBlurAmount+' px';
+    if(save)saveAppState();
+}
 function normalizePanelOpacity(value){return typeof value==='number'&&Number.isFinite(value)?Math.min(100,Math.max(0,Math.round(value))):28;}
 function setPanelOpacity(value,save=true){panelOpacity=normalizePanelOpacity(value);document.documentElement.style.setProperty('--panel-opacity',String(panelOpacity/100));const input=document.getElementById('panel-opacity');if(input)input.value=panelOpacity;const output=document.getElementById('panel-opacity-value');if(output)output.textContent=panelOpacity+'%';if(save)saveAppState();}
 function restoreDefaultCategories(){
@@ -3774,6 +3840,50 @@ function restoreDefaultCategories(){
     });
     loadAppState(state);saveAppState();showToast('Default categories restored — Undo is available.');
 }
+// Renaming retains the stable game ID used by award and GOTY references.
+let renameGameId=null,renameRequest=0,renameAbort=null;
+function hasCustomArtwork(game){
+    if(game.artworkSource==='custom')return true;
+    if(game.artworkSource==='auto')return false;
+    // Older drafts did not record provenance: preserve unrecognized covers.
+    return !!game.icon&&game.icon!==standardGameArt(game.name,game.steamAppID)&&game.icon!==standardGameArt(game.name,null);
+}
+function openRenameGame(id){
+    if(isSharedView)return;
+    const game=games.find(g=>g.id===id);if(!game)return;
+    renameAbort?.abort();renameRequest++;renameGameId=id;
+    document.getElementById('rename-game-input').value=game.name;
+    document.getElementById('rename-game-help').textContent=hasCustomArtwork(game)?'Your custom cover will be kept. Notes, ratings and award placements stay with this game.':'Default artwork will be looked up using the new title. Notes, ratings and award placements stay with this game.';
+    document.getElementById('rename-game-status').textContent='';
+    document.getElementById('rename-game-save').disabled=false;
+    document.getElementById('rename-game-dialog').showModal();
+    document.getElementById('rename-game-heading').focus({preventScroll:true});
+}
+async function saveRenamedGame(){
+    const dialog=document.getElementById('rename-game-dialog'),input=document.getElementById('rename-game-input'),save=document.getElementById('rename-game-save');
+    if(isSharedView||!dialog.open||save.disabled)return;
+    const name=input.value.trim(),game=games.find(g=>g.id===renameGameId);
+    if(!name){document.getElementById('rename-game-status').textContent='Enter a game title.';return;}
+    if(!game)return;
+    if(name===game.name){dialog.close();return;}
+    const oldName=game.name,request=++renameRequest;
+    save.disabled=true;document.getElementById('rename-game-status').textContent='Looking up the new title…';
+    const controller=new AbortController();renameAbort=controller;
+    const timeout=setTimeout(()=>controller.abort(),10000);
+    let data=null;
+    try{data=await fetchGameData(name,controller.signal);}catch(_){}finally{clearTimeout(timeout);}
+    // Cancel, Undo, imports or another rename must never apply a stale lookup.
+    if(request!==renameRequest||!dialog.open||!games.includes(game)||game.name!==oldName){if(request===renameRequest)save.disabled=false;return;}
+    const custom=hasCustomArtwork(game);
+    rememberUndo('Game renamed');
+    const state=getFullAppState(),updated=state.games.find(g=>g.id===game.id);
+    updated.name=name;updated.steamAppID=data?.steamAppID||null;
+    updated.artworkSource=custom?'custom':'auto';
+    if(!custom)updated.icon=data?.icons?.[0]||standardGameArt(name,null);
+    loadAppState(state);saveAppState();dialog.close();save.disabled=false;
+    showToast(data?'Game renamed — notes and awards kept.':'Game renamed. Lookup unavailable; you can change artwork from More.');
+}
+document.getElementById('rename-game-dialog').addEventListener('close',()=>{renameRequest++;renameAbort?.abort();renameAbort=null;renameGameId=null;document.getElementById('rename-game-save').disabled=false;});
 function setSaveStatus(message, error = false) { const el=document.getElementById('save-status'); if(el){el.textContent=message;el.classList.toggle('save-error',error);} }
 function jumpSection(id) { document.body.classList.add('phase-2-unlocked'); document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}); }
 function syncUxSettings(){ const p=document.getElementById('presentation-style'),m=document.getElementById('background-motion');if(p)p.value=presentationStyle;if(m)m.value=backgroundMotion; }
@@ -3787,7 +3897,7 @@ renderMainList=function(){originalRenderMain();const countLabel=document.getElem
  document.querySelectorAll('#game-list-container .game-item').forEach((row,index)=>{const game=games[index];
   const rank=document.createElement('span');rank.className='rank-number';rank.textContent=String(index+1).padStart(2,'0');rank.setAttribute('aria-label',`Rank ${index+1}`);row.prepend(rank);
   const cover=row.querySelector('.game-icon-wrapper');cover.removeAttribute('onclick');const img=cover.querySelector('img');img.alt=game.name;const coverBtn=button('',()=>isSharedView?openStoreModal(game.id):openIconModal(game.id),'cover-button');coverBtn.setAttribute('aria-label',`${isSharedView?'View details for':'Change artwork for'} ${game.name}`);img.replaceWith(coverBtn);coverBtn.append(img);
-  if(!isSharedView){const actions=row.querySelector('.game-item-actions');const more=document.createElement('details');more.className='game-more';const summary=document.createElement('summary');summary.textContent='More';more.append(summary);const menu=document.createElement('div');menu.append(button('Change artwork',()=>{more.open=false;openIconModal(game.id);}));const up=button('Move up',()=>moveGameInRanking(game.id,-1));up.disabled=index===0;const down=button('Move down',()=>moveGameInRanking(game.id,1));down.disabled=index===games.length-1;menu.append(up,down);const del=row.querySelector('.delete-btn');menu.append(del);more.append(menu);actions.append(more);
+  if(!isSharedView){const actions=row.querySelector('.game-item-actions');const more=document.createElement('details');more.className='game-more';const summary=document.createElement('summary');summary.textContent='More';more.append(summary);const menu=document.createElement('div');menu.append(button('Rename game',()=>{more.open=false;openRenameGame(game.id);}));menu.append(button('Change artwork',()=>{more.open=false;openIconModal(game.id);}));const up=button('Move up',()=>moveGameInRanking(game.id,-1));up.disabled=index===0;const down=button('Move down',()=>moveGameInRanking(game.id,1));down.disabled=index===games.length-1;menu.append(up,down);const del=row.querySelector('.delete-btn');menu.append(del);more.append(menu);actions.append(more);
    row.querySelector('.note-toggle-btn').setAttribute('aria-expanded',String(openNotes.has(game.id)));
    row.querySelector('.finish-toggle-btn').setAttribute('aria-pressed',String(game.finished));
    row.querySelector('.game-meta-badges')?.remove();
@@ -3831,7 +3941,7 @@ function trackDialog(){const active=visibleDialog();if(active===focusedDialog)re
 function closeActiveDialog(){const active=visibleDialog();if(!active)return;if(active.tagName==='DIALOG')active.close();else if(active.id==='image-export-modal')closeImageExportPreview();else if(active.id==='rating-modal')closeRatingModal();else closeModal(active.id);trackDialog();}
 document.addEventListener('keydown',e=>{const active=visibleDialog();if(!active){if(e.key==='Escape'&&window.__previewState&&window.parent!==window)window.parent.postMessage('close-awards-preview','*');return;}if(e.key==='Escape'){e.preventDefault();closeActiveDialog();}if(e.key==='Tab'){const items=Array.from(active.querySelectorAll('button,input,select,textarea,a[href],summary,[tabindex="0"]')).filter(el=>!el.disabled&&el.getClientRects().length);if(!items.length)return;const first=items[0],last=items.at(-1);if(e.shiftKey&&(document.activeElement===first||!active.contains(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
 document.addEventListener('DOMContentLoaded',()=>{
- document.body.classList.add('phase-2-unlocked');syncUxSettings();if(!isSharedView)saveAppState();
+ if(isSharedView)document.body.classList.add('phase-2-unlocked');syncUxSettings();if(!isSharedView)saveAppState();
  document.getElementById('goty-blurb-input')?.addEventListener('input',saveAppState);
  window.addEventListener('message',e=>{if(e.source===document.getElementById('page-preview-frame')?.contentWindow&&e.data==='close-awards-preview')document.getElementById('page-preview').close();});
  // Theme sections: compact grouped navigation with live example using actual theme variables.
