@@ -181,7 +181,7 @@ var LZString=function(){var r=String.fromCharCode,o="ABCDEFGHIJKLMNOPQRSTUVWXYZa
             background-repeat: no-repeat;
             background-size: cover;
             background-position: center;
-            background-attachment: fixed;
+            background-attachment: scroll;
             box-sizing: border-box;
             width: 100%;
         }
@@ -1066,6 +1066,26 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
 #share-section .share-secondary button,#share-section .share-presentation select { border-radius:14px; }
 @media(max-width:540px) { .header-bubble { padding:12px 18px; } .header-bubble.name-bubble { flex-basis:100%; } #share-section { border-radius:24px; } }
 </style>
+
+<style id="stable-background-and-opacity">
+:root { --panel-opacity:.28; }
+body { position:relative; isolation:isolate; min-height:100vh; min-height:100svh; background-image:none!important; }
+#page-background { position:fixed; top:0; left:0; width:100%; height:100vh; height:100lvh; z-index:0; pointer-events:none; overflow:hidden; contain:strict; background:var(--browser-chrome-color); }
+#page-background #shader-bg,#image-background { position:absolute; inset:0; width:100%; height:100%; }
+#page-background #shader-bg { transform:none; will-change:auto; }
+#image-background { background-position:center; background-size:cover; background-repeat:no-repeat; }
+.export-render-root .container { background:rgba(12,14,24,var(--panel-opacity)); }
+body>.container { position:relative; z-index:1; background:rgba(12,14,24,var(--panel-opacity)); transition:background-color .2s ease,border-color .2s ease; }
+@media(any-pointer:coarse) { body>.container { backdrop-filter:none; -webkit-backdrop-filter:none; } }
+.opacity-setting { margin:12px 0 20px; padding:16px; border:1px solid var(--ui-border); border-radius:16px; }
+.opacity-setting label { display:flex; justify-content:space-between; gap:12px; font-size:14px; }
+.opacity-setting input { width:100%; margin:14px 0; accent-color:var(--accent); }
+.opacity-setting p,.category-recovery p { color:#aeb8cb; font:12px/1.6 var(--ui-font); }
+.opacity-presets { display:flex; flex-wrap:wrap; gap:8px; }
+.opacity-presets button,.category-recovery button { font:13px var(--ui-font); padding:9px 14px; min-height:40px; background:#ffffff09; border:1px solid var(--ui-border); color:#e4eaf5; text-transform:none; }
+.category-recovery { margin:24px auto 0; max-width:600px; text-align:center; font:12px/1.6 var(--ui-font); color:#aeb8cb; }
+.category-recovery summary { cursor:pointer; width:fit-content; margin:auto; }
+</style>
 </head>
 <body class="phase-2-unlocked">
 <div id="boot-screen" role="status" aria-live="polite"><span class="boot-mark" aria-hidden="true"></span><span class="boot-title">GAME AWARDS 2026</span><p id="boot-message">Getting your awards ready…</p><button id="boot-retry" onclick="location.reload()">Try again</button></div>
@@ -1093,7 +1113,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
 <script>if (window.location.hash.startsWith('#share=')) document.body.classList.add('shared-view');</script>
 
 <!-- BACKGROUND SHADER CANVAS -->
-<canvas id="shader-bg" width="1920" height="928" style="display: block;"></canvas>
+<div id="page-background" aria-hidden="true"><div id="image-background"></div><canvas id="shader-bg" width="1920" height="928" style="display: block;"></canvas></div>
 
 <div class="container" id="app-content" aria-busy="true">
     <header>
@@ -1169,6 +1189,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
 
         <div class="theme-option-group">
             <span class="theme-option-label">Fine Color Controls</span>
+            <div class="opacity-setting"><label for="panel-opacity">Panel background opacity <output id="panel-opacity-value" for="panel-opacity">28%</output></label><input id="panel-opacity" type="range" min="0" max="100" value="28" oninput="setPanelOpacity(Number(this.value))"><div class="opacity-presets" role="group" aria-label="Panel opacity presets"><button type="button" onclick="setPanelOpacity(28)">Light · 28%</button><button type="button" onclick="setPanelOpacity(50)">Balanced · 50%</button><button type="button" onclick="setPanelOpacity(89)">Dark · 89%</button><button type="button" onclick="setPanelOpacity(100)">Solid</button></div><p>Lower opacity lets more of the background show through.</p></div>
             <div class="theme-scroll-row">
                 <div class="color-picker-card">
                     <input type="color" id="accent-color-picker" class="color-picker-input-circle" value="#dd80ff" oninput="setAccentColor(this.value)">
@@ -1286,6 +1307,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
                 <input hidden id="backup-file" type="file" accept=".json,application/json" onchange="importBackup(this.files[0])">
             </div>
         </section>
+        <details class="category-recovery editor-only"><summary>Category settings</summary><p>Restore the five original awards. Your game list, notes and GOTY are kept.</p><button type="button" onclick="restoreDefaultCategories()">Reset categories to defaults</button></details>
     </div>
 </div>
 
@@ -1306,7 +1328,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
 
 
 <div id="undo-notice" class="editor-only" role="status" hidden><span></span><button onclick="undoLastChange()">Undo</button><button aria-label="Dismiss undo notification" onclick="this.parentElement.hidden=true">×</button></div>
-<dialog id="game-picker" class="ux-dialog" aria-labelledby="picker-heading"><div class="dialog-heading"><h2 id="picker-heading">Choose games</h2><button aria-label="Close game picker" onclick="this.closest('dialog').close()">×</button></div><input type="search" id="picker-search" aria-label="Search games" placeholder="Search your games…" oninput="renderPicker()"><div id="picker-list"></div><div class="dialog-actions"><span id="picker-count" role="status"></span><button onclick="this.closest('dialog').close()">Cancel</button><button onclick="applyGamePicker()">Done</button></div></dialog>
+<dialog id="game-picker" class="ux-dialog" aria-labelledby="picker-heading"><div class="dialog-heading"><h2 id="picker-heading" tabindex="-1" autofocus>Choose games</h2><button aria-label="Close game picker" onclick="this.closest('dialog').close()">×</button></div><input type="search" id="picker-search" aria-label="Search games" placeholder="Search your games…" oninput="renderPicker()"><div id="picker-list"></div><div class="dialog-actions"><span id="picker-count" role="status"></span><button onclick="this.closest('dialog').close()">Cancel</button><button onclick="applyGamePicker()">Done</button></div></dialog>
 <dialog id="page-preview" class="ux-dialog" aria-label="Interactive awards page preview"><div class="dialog-heading"><h2>Your shared page</h2><button onclick="this.closest('dialog').close()">Back to editing</button></div><iframe id="page-preview-frame" title="Interactive shared page preview" sandbox="allow-scripts allow-same-origin allow-popups"></iframe></dialog>
 
 <!-- MODALS -->
@@ -1485,11 +1507,11 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
         if (activeShaderPreset === 3) {
             if (customBgInputWrapper) customBgInputWrapper.style.display = "flex";
             if (canvas) canvas.style.display = "none";
-            if (activeCustomBgUrl) document.body.style.backgroundImage = `url("${activeCustomBgUrl}")`;
+            document.getElementById('image-background').style.backgroundImage = activeCustomBgUrl ? `url("${activeCustomBgUrl}")` : "none";
         } else {
             if (customBgInputWrapper) customBgInputWrapper.style.display = "none";
             if (canvas) canvas.style.display = "block";
-            document.body.style.backgroundImage = "none";
+            document.getElementById('image-background').style.backgroundImage = "none";
         }
         // Apply the palette before the heavy shader starts using the new preset,
         // and explicitly sync Safari's chrome color on the preset switch.
@@ -1502,7 +1524,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
     function setCustomBgUrl(urlVal) {
         activeCustomBgUrl = urlVal.trim();
         document.getElementById("custom-bg-url-input").value = activeCustomBgUrl;
-        if (activeShaderPreset === 3 && activeCustomBgUrl) document.body.style.backgroundImage = `url("${activeCustomBgUrl}")`;
+        if (activeShaderPreset === 3) document.getElementById('image-background').style.backgroundImage = activeCustomBgUrl ? `url("${activeCustomBgUrl}")` : "none";
         saveAppState();
     }
 
@@ -1668,8 +1690,11 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
     const canvas = document.getElementById('shader-bg');
     const gl = canvas.getContext('webgl');
     if (gl) {
-        const mobileShaderMode = window.matchMedia('(pointer: coarse)').matches && window.innerWidth <= 900;
+        const mobileShaderMode = isTouchDevice || window.matchMedia('(any-pointer: coarse)').matches;
+        let canvasResizePending = true;
+        function queueCanvasResize() { canvasResizePending = true; }
         function resizeCanvas() {
+            canvasResizePending = false;
             const bounds = canvas.getBoundingClientRect();
             const pixelRatio = Math.min(window.devicePixelRatio || 1, mobileShaderMode ? 1.25 : 2);
             const displayWidth = Math.max(1, Math.round(bounds.width * pixelRatio));
@@ -1678,12 +1703,14 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
                 canvas.width = displayWidth;
                 canvas.height = displayHeight;
                 gl.viewport(0, 0, displayWidth, displayHeight);
+                return true;
             }
         }
-        window.addEventListener('orientationchange', resizeCanvas);
-        window.addEventListener('pageshow', resizeCanvas);
+        window.addEventListener('orientationchange', queueCanvasResize);
+        window.addEventListener('resize', queueCanvasResize);
+        window.addEventListener('pageshow', queueCanvasResize);
         if ('ResizeObserver' in window) {
-            const shaderResizeObserver = new ResizeObserver(resizeCanvas);
+            const shaderResizeObserver = new ResizeObserver(queueCanvasResize);
             shaderResizeObserver.observe(canvas);
         }
         resizeCanvas();
@@ -2624,6 +2651,8 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
         function render(time) {
             requestAnimationFrame(render);
             if (document.hidden || activeShaderPreset === 3 || gl.isContextLost()) return;
+            // Resize only immediately before a draw, avoiding a cleared canvas between throttled frames.
+            if (canvasResizePending && resizeCanvas()) { shaderFrameCountdown = 0; lastStillSignature = ''; }
             const stillSignature = [activeShaderPreset, activeShaderTintRgb, activeShaderColor2Rgb, activeShaderBgRgb, canvas.width, canvas.height].join('|');
             if (backgroundMotion === 'still' && lastStillSignature === stillSignature) return;
             if (backgroundMotion === 'animated') lastStillSignature = '';
@@ -2638,6 +2667,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
             }
         }
         window.captureShaderBackground = () => {
+            if (canvasResizePending) resizeCanvas();
             drawShaderFrame(backgroundMotion === "still" ? 12000 : performance.now());
             return canvas.toDataURL('image/png');
         };
@@ -2688,10 +2718,10 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
         const userName = document.getElementById("user-name-input").value;
         const gotyBlurb = document.getElementById("goty-blurb-input").value;
         const slotsData = [];
-        document.querySelectorAll(".category-slot").forEach(slot => {
+        document.getElementById("category-grid").querySelectorAll(":scope > .category-slot").forEach(slot => {
             const titleEl = slot.querySelector(".category-title");
             const subEl = slot.querySelector(".category-subtitle");
-            const catTitle = titleEl ? titleEl.innerText.trim() : "";
+            const catTitle = titleEl?.innerText.trim() || slot.dataset.savedTitle || "Untitled award";
             const catSub = subEl ? subEl.innerText.trim() : "";
             if (catTitle) {
                 const gameIds = Array.from(slot.querySelectorAll(".dropped-icon")).map(img => img.dataset.gameId);
@@ -2700,7 +2730,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
         });
 
         return { 
-            presentationStyle, backgroundMotion, userName, isListView, games, categories: slotsData,
+            presentationStyle, backgroundMotion, panelOpacity, userName, isListView, games, categories: slotsData,
             goty: { gameId: gotyGameId, blurb: gotyBlurb },
             fontPreset: activeFontPreset, shaderPreset: activeShaderPreset, customBgUrl: activeCustomBgUrl,
             shaderTintHex: activeShaderTintHex, shaderColor2Hex: activeShaderColor2Hex, shaderBgHex: activeShaderBgHex,
@@ -2717,7 +2747,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
     function loadFromLocalStorage() { try { const saved = localStorage.getItem("goty_app_data"); if(saved) loadAppState(JSON.parse(saved)); else initDefaultState(); } catch (_) { initDefaultState(); setSaveStatus('Storage unavailable — download a backup', true); } }
 
     function initDefaultState() {
-        uxLoading = true; presentationStyle = "games"; backgroundMotion = "animated";
+        uxLoading = true; presentationStyle = "games"; backgroundMotion = "animated"; setPanelOpacity(28, false);
         games = []; gotyGameId = null; document.getElementById("goty-blurb-input").value = "";
         document.getElementById("category-grid").innerHTML = "";
         shaderPalettes = cloneShaderDefaults();
@@ -2731,6 +2761,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
         uxLoading = true;
         presentationStyle = ["games","ceremony","showcase"].includes(data.presentationStyle) ? data.presentationStyle : "games";
         backgroundMotion = data.backgroundMotion === "still" ? "still" : "animated";
+        setPanelOpacity(data.panelOpacity, false);
         const nameVal = data.userName || "";
         document.getElementById("user-name-input").value = nameVal;
         document.getElementById("name-display").innerText = nameVal || "Anonymous";
@@ -3271,7 +3302,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
         drawer.style.display = isHidden ? 'block' : 'none';
         if(isHidden) openNotes.add(gameId); else openNotes.delete(gameId);
         document.querySelector(`[data-game-id="${gameId}"] .note-toggle-btn`)?.setAttribute('aria-expanded', String(isHidden));
-        if (isHidden) drawer.querySelector('textarea')?.focus();
+        // Notes are focused only when the user taps the text field.
     }
 
     function ratingIcon(value) {
@@ -3523,7 +3554,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
 
     function createCategorySlot(catName, initialGameIds = [], descriptionText = "") {
         const grid = document.getElementById("category-grid");
-        const slot = document.createElement("div"); slot.className = "category-slot";
+        const slot = document.createElement("div"); slot.className = "category-slot"; slot.dataset.savedTitle = catName || "Untitled award";
 
         slot.addEventListener('dragenter', (e) => { e.preventDefault(); slot.classList.add('drag-over'); });
         slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('drag-over'); });
@@ -3532,7 +3563,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
         
         const headerRow = document.createElement("div"); headerRow.className = "category-header-row";
         const title = document.createElement("div"); title.className = "category-title"; title.innerText = catName; 
-        if (!isSharedView) { title.contentEditable = "true"; title.setAttribute("role","textbox"); title.setAttribute("aria-label","Award category title"); title.onblur = saveAppState; title.onkeydown = (e) => { if(e.key === "Enter") { e.preventDefault(); title.blur(); } }; }
+        if (!isSharedView) { title.contentEditable = "true"; title.setAttribute("role","textbox"); title.setAttribute("aria-label","Award category title"); title.oninput = () => { if(title.innerText.trim())slot.dataset.savedTitle=title.innerText.trim();saveAppState(); }; title.onblur = () => { if(!title.innerText.trim())title.innerText=slot.dataset.savedTitle;saveAppState(); }; title.onkeydown = (e) => { if(e.key === "Enter") { e.preventDefault(); title.blur(); } }; }
         headerRow.appendChild(title);
 
         if (!isSharedView) {
@@ -3543,7 +3574,7 @@ body.shared-view .shared-review-copy .game-note-display::before { content: none;
         slot.appendChild(headerRow);
 
         const subtitle = document.createElement("div"); subtitle.className = "category-subtitle"; subtitle.innerText = descriptionText;
-        if (!isSharedView) { subtitle.contentEditable = "true"; subtitle.setAttribute("role","textbox"); subtitle.setAttribute("aria-label","Award description"); subtitle.setAttribute("data-placeholder", "Add description..."); subtitle.onblur = saveAppState; subtitle.onkeydown = (e) => { if(e.key === "Enter") { e.preventDefault(); subtitle.blur(); } }; }
+        if (!isSharedView) { subtitle.contentEditable = "true"; subtitle.setAttribute("role","textbox"); subtitle.setAttribute("aria-label","Award description"); subtitle.setAttribute("data-placeholder", "Add description..."); subtitle.oninput = () => { if(title.innerText.trim())slot.dataset.savedTitle=title.innerText.trim();saveAppState(); }; title.onblur = () => { if(!title.innerText.trim())title.innerText=slot.dataset.savedTitle;saveAppState(); }; subtitle.onkeydown = (e) => { if(e.key === "Enter") { e.preventDefault(); subtitle.blur(); } }; }
         slot.appendChild(subtitle);
 
         const dropC = document.createElement("div"); dropC.className = "dropped-icons-container"; slot.appendChild(dropC);
@@ -3634,6 +3665,7 @@ function packShareState(state) {
     if(state.presentationStyle==='showcase')data.p=1;
     else if(state.presentationStyle==='games'||!state.presentationStyle)data.p=2;
     if(state.backgroundMotion==='still')data.m=1;
+    const opacity=normalizePanelOpacity(state.panelOpacity);if(opacity!==28)data.q=opacity;
     if(state.fontPreset&&state.fontPreset!=='default')data.f=state.fontPreset;
     if(preset===3&&state.customBgUrl)data.u=state.customBgUrl;
     const base=SHADER_DEFAULT_PALETTES[preset], palette=state.shaderPalettes?.[preset]||base;
@@ -3661,7 +3693,7 @@ function unpackShareState(data) {
     const base=SHADER_DEFAULT_PALETTES[data.s],o=data.o||{};
     for(const color of Object.values(o))if(typeof color!=='string'||!/^#[0-9a-f]{6}$/i.test(color))throw Error('Invalid color');
     const palette={...base,color1:o.a||base.color1,color2:o.b||base.color2,color3:o.c||base.color3,accent:o.d||base.accent};
-    return {userName:typeof data.n==='string'?data.n:'',games,categories,goty:{gameId:data.w===undefined?null:ref(data.w),blurb:typeof data.b==='string'?data.b:''},shaderPreset:Number(data.s),shaderPalettes:{[data.s]:palette},accentHex:palette.accent,fontColorHex:o.e||'#f0f0f0',fontPreset:typeof data.f==='string'?data.f:'default',customBgUrl:typeof data.u==='string'?data.u:'',isListView:data.l===1,presentationStyle:data.p===1?'showcase':data.p===2?'games':'ceremony',backgroundMotion:data.m===1?'still':'animated'};
+    return {panelOpacity:normalizePanelOpacity(data.q),userName:typeof data.n==='string'?data.n:'',games,categories,goty:{gameId:data.w===undefined?null:ref(data.w),blurb:typeof data.b==='string'?data.b:''},shaderPreset:Number(data.s),shaderPalettes:{[data.s]:palette},accentHex:palette.accent,fontColorHex:o.e||'#f0f0f0',fontPreset:typeof data.f==='string'?data.f:'default',customBgUrl:typeof data.u==='string'?data.u:'',isListView:data.l===1,presentationStyle:data.p===1?'showcase':data.p===2?'games':'ceremony',backgroundMotion:data.m===1?'still':'animated'};
 }
 function decodeSharePayload(payload){
     const json=typeof LZString!=='undefined'?LZString.decompressFromEncodedURIComponent(payload):decodeURIComponent(atob(payload));
@@ -3726,9 +3758,22 @@ function downloadWebsiteLauncher(){
 }
 
 // Presentation and editing upgrades. Data stays compatible with existing saves.
-let presentationStyle = 'games', backgroundMotion = 'animated', uxLoading = false;
+let presentationStyle = 'games', backgroundMotion = 'animated', panelOpacity = 28, uxLoading = false;
 const openNotes = new Set();
 let undoState = null, pickerTarget = null, pickerSelection = new Set(), previewSource = '';
+function normalizePanelOpacity(value){return typeof value==='number'&&Number.isFinite(value)?Math.min(100,Math.max(0,Math.round(value))):28;}
+function setPanelOpacity(value,save=true){panelOpacity=normalizePanelOpacity(value);document.documentElement.style.setProperty('--panel-opacity',String(panelOpacity/100));const input=document.getElementById('panel-opacity');if(input)input.value=panelOpacity;const output=document.getElementById('panel-opacity-value');if(output)output.textContent=panelOpacity+'%';if(save)saveAppState();}
+function restoreDefaultCategories(){
+    if(isSharedView)return;
+    if(!confirm('Reset award categories to the five defaults? Matching default awards keep their games and descriptions. Custom categories are removed. Your game list, notes and GOTY stay unchanged. You can undo this.'))return;
+    rememberUndo('Categories reset');
+    const state=getFullAppState();
+    state.categories=defaultCategories.map(title=>{
+        const matches=state.categories.filter(c=>c.title===title);
+        return {title,description:matches.find(c=>c.description)?.description||'',gameIds:[...new Set(matches.flatMap(c=>c.gameIds))]};
+    });
+    loadAppState(state);saveAppState();showToast('Default categories restored — Undo is available.');
+}
 function setSaveStatus(message, error = false) { const el=document.getElementById('save-status'); if(el){el.textContent=message;el.classList.toggle('save-error',error);} }
 function jumpSection(id) { document.body.classList.add('phase-2-unlocked'); document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}); }
 function syncUxSettings(){ const p=document.getElementById('presentation-style'),m=document.getElementById('background-motion');if(p)p.value=presentationStyle;if(m)m.value=backgroundMotion; }
@@ -3767,7 +3812,7 @@ createGameWrapperNode=function(game){const w=originalWrapper(game);w.onclick=nul
 const artwork=document.createElement('div');artwork.className='award-artwork';b.replaceWith(artwork);artwork.append(b);
 w.querySelectorAll(':scope > .remove-game-btn, :scope > .game-info-btn').forEach(control=>artwork.append(control));
 const caption=document.createElement('span');caption.className='award-game-title';caption.textContent=game.name;w.append(caption);return w;};
-function openGamePicker(target){pickerTarget=target;pickerSelection=new Set(target==='goty'?(gotyGameId?[gotyGameId]:[]):Array.from(target.querySelectorAll('.dropped-icon')).map(x=>x.dataset.gameId));document.getElementById('picker-heading').textContent=target==='goty'?'Choose Game of the Year':`Games for ${target.querySelector('.category-title').textContent}`;document.getElementById('picker-search').value='';renderPicker();document.getElementById('game-picker').showModal();document.getElementById('picker-search').focus();}
+function openGamePicker(target){pickerTarget=target;pickerSelection=new Set(target==='goty'?(gotyGameId?[gotyGameId]:[]):Array.from(target.querySelectorAll('.dropped-icon')).map(x=>x.dataset.gameId));document.getElementById('picker-heading').textContent=target==='goty'?'Choose Game of the Year':`Games for ${target.querySelector('.category-title').textContent}`;document.getElementById('picker-search').value='';renderPicker();document.getElementById('game-picker').showModal();document.getElementById('picker-heading').focus({preventScroll:true});}
 function renderPicker(){const list=document.getElementById('picker-list');list.replaceChildren();const q=document.getElementById('picker-search').value.toLowerCase();const matches=games.filter(g=>g.name.toLowerCase().includes(q));for(const g of matches){const label=document.createElement('label');label.className='picker-option';const input=document.createElement('input');input.type=pickerTarget==='goty'?'radio':'checkbox';input.name='picker-game';input.checked=pickerSelection.has(g.id);input.onchange=()=>{if(pickerTarget==='goty')pickerSelection.clear();if(input.checked)pickerSelection.add(g.id);else pickerSelection.delete(g.id);document.getElementById('picker-count').textContent=`${pickerSelection.size} selected`;};const img=document.createElement('img');img.src=g.icon;img.alt='';img.onerror=()=>{img.style.visibility='hidden';};const text=document.createElement('span');text.textContent=g.name;label.append(input,img,text);list.append(label);}if(!matches.length)list.textContent=games.length?'No games match your search.':'Add games to your collection first.';document.getElementById('picker-count').textContent=`${pickerSelection.size} selected`;}
 function applyGamePicker(){if(pickerTarget==='goty'){gotyGameId=[...pickerSelection][0]||null;renderGotySlot();}else{const drop=pickerTarget.querySelector('.dropped-icons-container');const existing=Array.from(drop.querySelectorAll('.dropped-icon')).map(el=>el.dataset.gameId);const ids=[...existing.filter(id=>pickerSelection.has(id)),...[...pickerSelection].filter(id=>!existing.includes(id))];drop.replaceChildren();ids.forEach(id=>{const g=games.find(g=>g.id===id);if(g)appendGameToCategory(drop,g);});}saveAppState();document.getElementById('game-picker').close();clearTapSelection();}
 function downloadBackup(){const blob=new Blob([JSON.stringify({format:'game-awards-backup',version:1,state:getFullAppState()},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='Game-Awards-2026-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
@@ -3782,7 +3827,7 @@ buildExportComposition=function(){const stage=originalComposition();applyPresent
 let focusedDialog=null,returnFocus=null,lastOutsideFocus=null;
 document.addEventListener('focusin',e=>{if(!e.target.closest('dialog,.modal,.image-export-modal'))lastOutsideFocus=e.target;});
 function visibleDialog(){return Array.from(document.querySelectorAll('dialog[open],.modal,.image-export-modal')).find(el=>el.tagName==='DIALOG'?el.open:getComputedStyle(el).display!=='none'&&el.getBoundingClientRect().height>0);}
-function trackDialog(){const active=visibleDialog();if(active===focusedDialog)return;if(focusedDialog){focusedDialog=null;if(returnFocus?.isConnected)returnFocus.focus();else document.querySelector('.theme-bubble-btn')?.focus();}if(active){focusedDialog=active;returnFocus=lastOutsideFocus||document.activeElement;active.setAttribute('role','dialog');active.setAttribute('aria-modal','true');if(!active.getAttribute('aria-label')&&!active.getAttribute('aria-labelledby'))active.setAttribute('aria-label',active.querySelector('h2')?.textContent||'Game details');setTimeout(()=>{if(visibleDialog()===active&&!active.contains(document.activeElement))active.querySelector('input,button,textarea,[tabindex="0"]')?.focus();},0);}}
+function trackDialog(){const active=visibleDialog();if(active===focusedDialog)return;if(focusedDialog){focusedDialog=null;if(returnFocus?.isConnected&&returnFocus.matches('button,a[href],summary,input,textarea,select,[tabindex],[contenteditable="true"]')&&!(isTouchDevice&&returnFocus.matches('input,textarea,[contenteditable="true"]')))returnFocus.focus({preventScroll:true});else document.querySelector('.theme-bubble-btn')?.focus({preventScroll:true});}if(active){focusedDialog=active;returnFocus=lastOutsideFocus||(!active.contains(document.activeElement)?document.activeElement:null);active.setAttribute('role','dialog');active.setAttribute('aria-modal','true');if(!active.getAttribute('aria-label')&&!active.getAttribute('aria-labelledby'))active.setAttribute('aria-label',active.querySelector('h2')?.textContent||'Game details');setTimeout(()=>{if(visibleDialog()===active&&!active.contains(document.activeElement))active.querySelector('button,[tabindex="-1"],summary')?.focus({preventScroll:true});},0);}}
 function closeActiveDialog(){const active=visibleDialog();if(!active)return;if(active.tagName==='DIALOG')active.close();else if(active.id==='image-export-modal')closeImageExportPreview();else if(active.id==='rating-modal')closeRatingModal();else closeModal(active.id);trackDialog();}
 document.addEventListener('keydown',e=>{const active=visibleDialog();if(!active){if(e.key==='Escape'&&window.__previewState&&window.parent!==window)window.parent.postMessage('close-awards-preview','*');return;}if(e.key==='Escape'){e.preventDefault();closeActiveDialog();}if(e.key==='Tab'){const items=Array.from(active.querySelectorAll('button,input,select,textarea,a[href],summary,[tabindex="0"]')).filter(el=>!el.disabled&&el.getClientRects().length);if(!items.length)return;const first=items[0],last=items.at(-1);if(e.shiftKey&&(document.activeElement===first||!active.contains(document.activeElement))){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}});
 document.addEventListener('DOMContentLoaded',()=>{
